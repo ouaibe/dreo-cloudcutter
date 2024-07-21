@@ -9,7 +9,7 @@ This information is provided for educational purposes only, I'm not responsible 
 
 This project wouldn't have been possible without the invaluable help of other community members, namely [Gabriel Tremblay](https://github.com/gabtremblay) for helping me with the firmware extraction part and [kuba2k2](https://github.com/kuba2k2) for his incredible work on [Libretiny](https://docs.libretiny.eu/) and inifinite knowledge & patience that unblocked me multiple times. Also, shoutout to my local *Robot Speakeasy* maker community for their support and sharing multiple ideas along the way! 
 
-Also, this took a fair bit of my free time, so thanks to my loved ones ❤️ for their support as I was spending an inordinate amount of energy on that project...
+Obviously, this took a fair bit of my free time, so thanks to my loved ones ❤️ for their support as I was spending an inordinate amount of energy on that project...
 
 # Intro
 
@@ -1178,7 +1178,7 @@ If you didn't, and can't find the ESPHome backup AP, or something got awfully wr
 If you're skilled and motivated, feel free to fork this repo and tackle this list of challenges:
 
 - [ ] Finish the bi-directionnal integration and read the config from the UART traffic sent by the MCU (As well as the temperature).
-- [ ] Build a real ESPHome component in C++ instead of the Lanbdas that I used in the `.yaml` file.
+- [ ] Build a real ESPHome component in C++ instead of the Lambdas that I used in the `.yaml` file.
 - [ ] Add support for other fans.
 - [ ] Add support for the fan timer.
 - [ ] Re-implement the "long press on oscillate" to reset the wifi.
