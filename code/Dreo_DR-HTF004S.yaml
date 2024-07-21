@@ -1,0 +1,321 @@
+esphome:
+  name: Dreo_DR-HTF004S
+  platformio_options:
+    #board_build.bkcrypt_coeffs: "78563412AA55AA2FDD63EE3A00AAEE4F" does not really matter
+    board_build.bkcrypt_coeffs: "00000000000000000000000000000000"
+    board_build.bkota.key: "0123456789ABCDEF0123456789ABCDEF"
+    board_build.bkota.iv: "0123456789ABCDEF"
+    board_flash.calibration: "0x1E0000+0x1000"
+    board_flash.download: "0x132000+0xAE000"
+
+bk72xx:
+  board: generic-bk7231n-qfn32-tuya
+  framework:
+    version: latest
+    loglevel: debug
+    debug:
+      - wifi
+      - ota
+      - client
+      - server
+      - fdb
+      - mdns
+      - lwip
+
+# Enable logging
+logger:
+  level: DEBUG
+  
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Optional manual IP
+  manual_ip:
+    static_ip: <YOUR_IP_HERE>
+    gateway: <YOUR_GW_HERE>
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Dreo Bl2028N Fallback Hotspot"
+    password: "<YOUR_FALLBACK_AP_PW_HERE>"
+
+web_server:
+  port: 80
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "<YOUR_ENCRYPTION_KEY_HERE>"
+
+ota:
+  - platform: esphome
+    password: "<YOUR_OTA_PW_HERE>"
+
+# Enable UART on the right PINs to communicate with 8051 MCU
+uart:
+  id: uart_bus
+  tx_pin: TX1
+  rx_pin: RX1
+  baud_rate: 9600
+  debug:
+    direction: BOTH
+    dummy_receiver: true
+
+# Define global variables
+globals:
+
+  - id: fan_mode_memory_global #remember last fan mode
+    type: std::string
+    restore_value: true
+    initial_value: '"OFF"'
+
+  - id: fan_mode_global
+    type: std::string
+    restore_value: true
+    initial_value: '"OFF"'
+  
+  - id: fan_speed_global
+    type: int
+    restore_value: true
+    initial_value: '1'
+  
+  - id: fan_oscillation_global
+    type: std::string
+    restore_value: true
+    initial_value: '"OFF"'
+  
+  - id: fan_beeper_global
+    type: std::string
+    restore_value: true
+    initial_value: '"Sound On"'
+  
+  - id: fan_adaptive_display_global
+    type: std::string
+    restore_value: true
+    initial_value: '"Adaptive Display On"'
+
+# Define select components
+select:
+  - platform: template
+    name: "Fan Mode"
+    id: fan_mode
+    options:
+      - "Auto"
+      - "Natural"
+      - "Normal"
+      - "Sleep"
+      - "OFF"
+    restore_value: true
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
+  - platform: template
+    name: "Fan Speed"
+    id: fan_speed
+    options:
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+      - "5"
+      - "6"
+      - "7"
+      - "8"
+      - "9"
+      - "10"
+      - "11"
+      - "12"
+    restore_value: true
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
+  - platform: template
+    name: "Oscillation Angle"
+    id: fan_oscillation
+    options:
+      - "OFF"
+      - "30 Degrees"
+      - "60 Degrees"
+      - "90 Degrees"
+      - "120 Degrees"
+    restore_value: true
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
+  - platform: template
+    name: "Beeper"
+    id: fan_beeper
+    options:
+      - "Sound On"
+      - "Sound Off"
+    restore_value: true
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
+  - platform: template
+    name: "Adaptive Display"
+    id: fan_adaptive_display
+    options:
+      - "Adaptive Display On"
+      - "Adaptive Display Off"
+    restore_value: true
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
+# Template switch to handle sending bytestreams with all the settings at once.
+switch:
+  - platform: template
+    name: "Send Fan Command"
+    id: send_fan_command
+    internal: true
+    turn_on_action:
+      - lambda: |-
+          std::vector<uint8_t> bytestream = {0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+          ESP_LOGD("custom", "Initial bytestream: ");
+          for (auto byte : bytestream) {
+            ESP_LOGD("custom", "0x%02X", byte);
+          }
+
+          // Modify the mode byte
+          // Remember the mode, only for the "ON" modes.
+          if (id(fan_mode).state == "Auto") {
+            id(fan_mode_memory_global) = id(fan_mode).state;
+            bytestream[14] = 0x1b;
+          } else if (id(fan_mode).state == "Natural") {
+            id(fan_mode_memory_global) = id(fan_mode).state;
+            bytestream[14] = 0x05;
+          } else if (id(fan_mode).state == "Normal") {
+            id(fan_mode_memory_global) = id(fan_mode).state;
+            bytestream[14] = 0x03;
+          } else if (id(fan_mode).state == "Sleep") {
+            id(fan_mode_memory_global) = id(fan_mode).state;
+            bytestream[14] = 0x07;
+          } else { // OFF
+            bytestream[14] = 0x02;
+          }
+
+          // Modify the speed byte
+          int speed = atoi(id(fan_speed).state.c_str());
+          bytestream[15] = speed;
+
+          // Modify the oscillation byte
+          // 1st nibble = Angle, 2nd nibble = activate (0 not needed)
+          if (id(fan_oscillation).state == "30 Degrees") {
+            bytestream[18] = 0x11;
+          } else if (id(fan_oscillation).state == "60 Degrees") {
+            bytestream[18] = 0x21;
+          } else if (id(fan_oscillation).state == "90 Degrees") {
+            bytestream[18] = 0x31;
+          } else if (id(fan_oscillation).state == "120 Degrees") {
+            bytestream[18] = 0x41;
+          } else { // OFF
+            bytestream[18] = 0x00;
+          }
+
+          // Modify the beeper byte
+          if (id(fan_beeper).state == "Sound On") {
+            bytestream[12] = 0x04;
+          } else if (id(fan_beeper).state == "Sound Off") {
+            bytestream[12] = 0x08;
+          }
+
+          // Modify the adaptive display byte
+          if (id(fan_adaptive_display).state == "Adaptive Display On") {
+            bytestream[29] = 0x40;
+          } else if (id(fan_adaptive_display).state == "Adaptive Display Off") {
+            bytestream[29] = 0x80;
+          }
+
+          ESP_LOGD("custom", "Modified bytestream before checksum: ");
+          for (auto byte : bytestream) {
+            ESP_LOGD("custom", "0x%02X", byte);
+          }
+
+          // Calculate checksum:
+          // Ignore 1st byte if it's 0xAA
+          // negative sum of remaining bytes
+          // minus twice the length (2nd byte of stream)
+          // modulo 256 (0x100)
+
+          int start = 0;
+
+          // Ignore the first byte if it is 0xAA (but keep it in final stream)
+          if (bytestream[0] == 0xAA) {
+            start = 1;
+          }
+
+          // Initialize checksum with the first useful byte (the length)
+          int checksum = bytestream[start];
+
+          // Negative sum of remaining bytes
+          for (int i = start + 1; i < bytestream.size(); i++) {
+            checksum -= bytestream[i];
+          }
+
+          // Substract 2x the length
+          checksum = (checksum - 2 * bytestream[start]) % 0x100;
+
+          bytestream.push_back(checksum);
+
+          ESP_LOGD("custom", "Bytestream with checksum: ");
+          for (auto byte : bytestream) {
+            ESP_LOGD("custom", "0x%02X", byte);
+          }
+
+          // Send the bytestream via UART
+          id(uart_bus).write_array(bytestream.data(), bytestream.size());
+
+# Define switches for turning the fan on and off, re-using the "fan mode" options
+  - platform: template
+    name: "Fan Power (ON/OFF)"
+    id: fan_power
+    lambda: |-
+          // Turn the switch ON/OFF by default based on the fan state.
+          if (!(id(fan_mode).state == "OFF")) { return true; } else { return false; }
+    turn_on_action:
+      - lambda: |-
+          // Turn on and restore fan mode from memory before it was turned OFF
+          id(fan_mode).publish_state(to_string(id(fan_mode_memory_global)).c_str());
+    turn_off_action:
+      - lambda: |-
+          id(fan_mode).publish_state("OFF");
+  
+  # Simple static UART commands to get settings, serial, etc.
+  - platform: uart
+    name: "Get Settings & Temp (5s)"
+    data: [0xaa, 0x0a, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xf9]
+    send_every: 5s
+  - platform: uart
+    name: "Get Serial (Once)"
+    data: [0xaa, 0x0b, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0xef]
+
+
+# Static UART commands taken from previous traffic dump - used for tests
+  - platform: uart
+    name: "UART - Turn fan ON/OFF"
+    data:
+        turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x02, 0x00, 0x00, 0x20, 0x02, 0x00, 0x00, 0x00, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6c]
+        turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x84]
+  - platform: uart
+    name: "UART - Beep ON/OFF"
+    data:
+      turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x04, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7E]
+      turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x08, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A]
+  - platform: uart
+    name: "UART - Adaptative Display ON/OFF"
+    data:
+      turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x41]
+      turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x01]
