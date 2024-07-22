@@ -674,9 +674,9 @@ Basically, it parses the HTTP request, and redirects based on the path, and only
 
 Aything else goes to... You guessed it:
 
-<img alt="404 Not Find" src="./images/404_notfind.png" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
+<img alt="404 Not Find" src="./images/404_notfind.png" width="150" style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
-<img alt="Hello Darkness My Old Friend" src="./images/darkness.gif" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 70%;">
+<img alt="Hello Darkness My Old Friend" src="./images/darkness.gif" style="display: block;margin-left: auto;margin-right: auto;width: 70%;">
 
 
 Oh yeah, those of you with fine eyes will have noticed that in some cases, the Webserver will respond...Twice, a 200, and then a 404 right after the `connection close`, ain't that neat?
