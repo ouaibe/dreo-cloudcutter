@@ -977,7 +977,7 @@ That's great, we can most definitely replay the commands that are sent, but in o
 
 This took way, way too long to figure out, mostly because it's 100% custom. It didn't help that ChatGPT regularly gave me wrong results for additions/XOR without implementing it in Python (TIL).
 
-There are very little, if no reference online, and although the devs could have used standards like `CRC-8` (even if about 30 different `CRC-8` exist), or even just `CRC-16` like the chip memory, which is probably done super fast in hardware (and supported by the MCU as well per the specsheet), but no they had to re-implement a custom algorithm, which is as follows:
+There are very little, if no reference online, and although the devs could have used standards like `CRC-8` (even if about 30 different `CRC-8` exist), or even just `CRC-16` like the chip memory, which is probably done super fast in hardware (and supported by the MCU as well per the specsheet), but no, they had to re-implement a custom algorithm, which is as follows:
 
 1. Ignore the first byte (`0xAA`).
 2. Start with the value of the second byte (The length).
@@ -1166,7 +1166,7 @@ If you use the second route, you can even validate the pre-encryption OTA file t
 ## Upload your OTA Update
 
 Once you have your encrypted and gzipped `.rbl` handy (the encryption and zipping are done automatically by ESPHome), you can:
-1. Put the fan back into pairing mode (hold the "swivel" button for 5s).
+1. Put the fan back into pairing mode (hold the "oscillation" button for 5s).
 2. It should expose an AP named `Dreo...` (you can find the exact name in the original firmware if you have a copy of it, in a hex editor, search for `HTFfirm` ASCII string)
 3. Connect to the AP and let it provide you with an address. It should take an IP in the `192.168.0.x` subnet.
 4. Now that you're connected, just validate the device information via the `/devinfoget` command and ensure you have the right fan, this is the last check before you're going to flash your device.
@@ -1179,7 +1179,7 @@ The device should now reboot, and connect to your wifi where you pointed it in y
 
 Congrats, you made it! 🎉
 
-If you didn't, and can't find the ESPHome backup AP, or something got awfully wrong, well, [UART it is, my friend.](#dumping-that-firmware)
+If you didn't, and can't find the ESPHome backup AP, or something went awfully wrong, well, [UART it is, my friend.](#dumping-that-firmware)
 
 # Where do we go from here / What's left to tackle
 If you're skilled and motivated, feel free to fork this repo and tackle this list of challenges:
