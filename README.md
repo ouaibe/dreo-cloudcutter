@@ -373,7 +373,7 @@ Now that we know what chip this should be, let's validate it, and gather more in
 
 <img alt="BL2028N" src="./images/bl2028n_deshielded.jpeg" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
-Clearly a BL2028N - After much reading on the chip, they're actually a special kind of [BK72xx](https://www.bekencorp.com/en/goods/detail/cid/7.html) (Mostly BK7231M), by Beken, and are well known from the open source community. The datasheet for that chip is on the [Elektroda forums](https://www.elektroda.com/rtvforum/topic3951016.html) (end of post attachment).
+Clearly a BL2028N - After much reading on the chip, they're actually a clone of [BK72xx](https://www.bekencorp.com/en/goods/detail/cid/7.html) (Mostly BK7231M), by Beken, and are well known from the open source community. The datasheet for that chip is on the [Elektroda forums](https://www.elektroda.com/rtvforum/topic3951016.html) (end of post attachment).
 
 Two open source projects actually support these chips:
 
@@ -803,7 +803,7 @@ We'll have to do a bit of binary exploration to get this info.
 ### Finding the keys
 
 - We have a dump of the bootloader code.
-- We know that even if the eFuse has code protections via coeffs built-in, the bootloader has the key to decrypt and install OTA updates anyways. And this key is quite often `0x123456789ABCDEF`.
+- We know that even if the eFuse has code protections via coeffs built-in, the bootloader has the key to decrypt (these are AES256-XTS encrypted) and install OTA updates anyways. And this key is quite often `01 23 45 67 89 AB CD EF`.
 - We just need to find the keys that are used in our chip to build a valid OTA image that the current bootloader will accept.
 
 Let's dig into the binary file using a hex editor:
@@ -812,7 +812,7 @@ Let's dig into the binary file using a hex editor:
 
 Looks like we're lucky.
 
-Also, the IV is right there (`01 23 45 67 89 AB CD EF`), and the coeffs are right before the second match here in case we need them `78 56 34 12 AA 55 AA 2F DD 63 EE 3A 00 AA EE 4F`.
+Also, the IV is right there (`01 23 45 67 89 AB CD EF`), and the coeffs are right before the second match here in case we need them `12 34 56 78    2F AA 55 AA    3A EE 63 DD    4F EE AA 00`.
 
  <img alt="coeffs" src="./images/coeffs.png" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
@@ -1006,7 +1006,7 @@ Since we're still connected to `RX2/TX2` we can see the OTA process taking place
 ```console
 new accept fd:3
 buf=POST /model.html HTTP/1.1
-Host: 192.168.6.44
+Host: 192.168.6.47
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5

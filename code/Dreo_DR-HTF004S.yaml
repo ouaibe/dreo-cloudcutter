@@ -1,7 +1,7 @@
 esphome:
   name: Dreo_DR-HTF004S
   platformio_options:
-    #board_build.bkcrypt_coeffs: "78563412AA55AA2FDD63EE3A00AAEE4F" does not really matter
+    #board_build.bkcrypt_coeffs: "123456782FAA55AA3AEE63DD4FEEAA00" does not really matter
     board_build.bkcrypt_coeffs: "00000000000000000000000000000000"
     board_build.bkota.key: "0123456789ABCDEF0123456789ABCDEF"
     board_build.bkota.iv: "0123456789ABCDEF"
