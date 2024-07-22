@@ -1135,6 +1135,10 @@ I [      0.000] LibreTiny v1.5.1 on generic-bk7231n-qfn32-tuya, compiled at Jul 
 [W][component:157]: Component wifi set Warning flag: scanning for networks
 ```
 
+This confirms that our adventure is over, we managed to create a valid OTA with ESPHome, and successfully *cloudcut* a Dreo fan! 🏰🌄
+
+Onto sharing with others...
+
 # The Howto
 
 ⚠️🚨 **[Read this](#disclaimer)** then come back here.
