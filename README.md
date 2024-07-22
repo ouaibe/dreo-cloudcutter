@@ -540,7 +540,9 @@ Because we're cheap, we'll use [Ghidra](https://ghidra-sre.org/), that being sai
 2. What kind of architecture are we looking at?
 3. What is the endianess of that architecture?
 
-For `2.` we can refer to [Libretyny's docs](https://docs.libretiny.eu/docs/platform/beken-72xx/) that mentions `Armv5TE` for `3.` we can just try both and see what Ghidra prefers (it's `little endian`).
+For `2.` we can refer to [Libretyny's docs](https://docs.libretiny.eu/docs/platform/beken-72xx/) that mentions `Armv5TE`. 
+
+For `3.` we can just try both and see what Ghidra prefers (it's `little endian`).
 
 For `1.`, it appears it depends on the board the chip is bundled on, and since we have no documentation, we'll have to asssume it's standard and see what works on generic [BK7231N](https://docs.libretiny.eu/boards/generic-bk7231n-qfn32-tuya/), the app image starts at `0x11000` so we could use just that?
 
