@@ -1161,7 +1161,7 @@ Also, the timer function isn't supported, HA has a much, much more powerful sche
 
 You have two choices depending on what you did prior:
 
-Use your HA ESPHome integration to do so via `Install -> Manual download -> Beken Application Image` and download the `.rbl` OTA file (encrypted with the right keys)
+- Use your HA ESPHome integration to do so via `Install -> Manual download -> Beken Application Image` and download the `.rbl` OTA file (encrypted with the right keys)
 - Call `esphome build Dreo_DR-HTF004S.yaml` command to generate the `.rbl` file that should be present after the build completes without errors in `/esphome/.esphome/build/Dreo_DR-HTF004S/.pioenvs/Dreo_DR-HTF004S/image_bk7231n_app.ota.rbl`
 
 If you use the second route, you can even validate the pre-encryption OTA file that is going to be at `/esphome/.esphome/build/Dreo_DR-HTF004S/.pioenvs/Dreo_DR-HTF004S/image_bk7231n_app.0x011000.rbl` with a hex editor and look at its partition table (search for the magic ASCII `01PE`)
