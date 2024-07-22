@@ -75,7 +75,7 @@ Like a lot of folks, I'm not a super fan (hah, that'll be the *Only Fan* pun, I 
 
 ## The Current Integrations
 
-I was thus quite happy to see that there existed an [alternative for Dreo fans](https://github.com/JeffSteinbok/hass-dreo) to control them via Home Assistant, thanks to the hard work by [Jeff Steinbok](https://github.com/JeffSteinbok). This integration is based on the work by [Gavin Zyonse](https://github.com/zyonse) for on the [Dreo Homebridge integration](https://github.com/zyonse/homebridge-dreo).
+I was thus quite happy to see that there existed an [alternative for Dreo fans](https://github.com/JeffSteinbok/hass-dreo) to control them via Home Assistant, thanks to the hard work by [Jeff Steinbok](https://github.com/JeffSteinbok). This integration is based on the work by [Gavin Zyonse](https://github.com/zyonse) for the [Dreo Homebridge integration](https://github.com/zyonse/homebridge-dreo).
 
 These are great, I don't need the basic and upsell-ridden Dreo app, but wait a minute... These still depend on the cloud!😩
 
@@ -166,6 +166,7 @@ So no luck there, but maybe if I block the MQTTs it'll fall back to MQTT? No it 
 Maybe during the initial handshake/device registration, there's info that is sent in the clear?
 
 Nope, it's all done over HTTPS:
+
 <img alt="HTTPS Handshake" src="./images/handshake-https.png" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
 Ok so maybe if I just grab the app cert and try to MiTM using [MiTMProxy+SSLStrip](https://github.com/mitmproxy/mitmproxy/blob/main/examples/contrib/sslstrip.py) or [SSLSplit](https://github.com/droe/sslsplit), or even with a specialized MQTT Proxy like [IOXY](https://github.com/NVISOsecurity/IOXY)?
@@ -379,7 +380,7 @@ Two open source projects actually support these chips:
 
 So this is great news, I might have a way to flash these with open source software, and then control the device via HA without the cloud! 🎉
 
-But wait, even if I flash these, how do I control the fan if it's actually the 8051 MCU that does the job? How do the two talk to eachother?
+But wait, even if I flash these, how do I control the fan if it's actually the 8051 MCU that does the job? How do they talk to eachother?
 
 I really need to dump that firmware to get to the next level, thankfully both of these communities have a set of tools, and even Beken makes some available on their download page.
 
@@ -409,7 +410,7 @@ While waiting for better hardware to dump the chip via UART (or SPI), I continue
 
 Checking out Beken's [Gitlab](https://gitlab.bekencorp.com/wifi_pub/matter/connectedhomeip/-/tree/SDK_3.0.X/), [Github](https://github.com/bekencorp/armino) and [other](https://github.com/cornrn/bk7231_freertos_sdk/tree/master/beken378) [sources ](https://github.com/alibaba/AliOS-Things) it appeared the Webserver could be based on [LwIP](https://github.com/ARMmbed/lwip).
 
-Digging through its code, and trying to find some endpoints, I cam across a post https://hacperme.com/posts/notes/20240508_bk7321n_heap_memory_leak/ describing some memleak issue, in which was an endpoint called `wifilist.html` which I tried, and...
+Digging through its code, and trying to find some endpoints, I came across a post https://hacperme.com/posts/notes/20240508_bk7321n_heap_memory_leak/ describing some memleak issue, in which was an endpoint called `wifilist.html` which I tried, and...
 
 ```console
  $curl -vvvvk http://192.168.6.47/wifilist.html
@@ -494,7 +495,7 @@ I was about to start using [scapy](https://scapy.net/) to send fake beacons with
 
 Allright, time to get serious.🔎
 
-First things first, we need to find the right UART tabs, thankfully we have the choice of either going via the connector which we 'believe' is UART, or, via the tabs on the PCB who seem closer to the chip.
+First things first, we need to find the right UART pads, thankfully we have the choice of either going via the connector which we 'believe' is UART, or, via the pads on the PCB who seem closer to the chip.
 
 <img alt="UART Shoddy Soldering Job" src="./images/uart_soldering.jpeg" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
@@ -542,6 +543,7 @@ For `2.` we can refer to [Libretyny's docs](https://docs.libretiny.eu/docs/platf
 For `1.`, it appears it depends on the board the chip is bundled on, and since we have no documentation, we'll have to asssume it's standard and see what works on generic [BK7231N](https://docs.libretiny.eu/boards/generic-bk7231n-qfn32-tuya/), the app image starts at `0x11000` so we could use just that?
 
 Oh, that's not good:
+
 <img alt="Ghidra 1984 Errors" src="./images/1984_errors.png" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
 
@@ -555,7 +557,7 @@ $ltchiptool soc bkpackager uncrc ./ltchiptool_bk72xx_2024-07-14_10-50-52_Dreo_Or
 Now that we have a De-CRC'd version, we can load it in Ghidra, remembering that:
 
 - The first `0x11000` bytes are the bootloader.
-- The base address is `0x10000`and was found with a bit of fiddling (confirmed later via UART).
+- The base address is `0x10000`and was found with a bit of fiddling (confirmed later via UART) and help from the community.
 
 Which brings us to a much more promising start with Ghidra:
 
@@ -674,7 +676,7 @@ Aything else goes to... You guessed it:
 
 <img alt="404 Not Find" src="./images/404_notfind.png" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
 
-<img alt="Hello Darkness My Old Friend" src="./images/darkness.gif" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 50%;">
+<img alt="Hello Darkness My Old Friend" src="./images/darkness.gif" width="150" style="  display: block;margin-left: auto;margin-right: auto;width: 70%;">
 
 
 Oh yeah, those of you with fine eyes will have noticed that in some cases, the Webserver will respond...Twice, a 200, and then a 404 right after the `connection close`, ain't that neat?
@@ -924,8 +926,8 @@ get ack1
 | 02 | Length of bytestream, excluding the first byte but including the last.  |
 | 03 | Command type byte, seems to be `0xFA` for changing a setting, `0xFF` for handshakes/reading info from the fan. |
 | 04 - 09 | Always `0x00`  |
-| 10 | Most of the time `0x02` for changing a setting. Sometimes `0x04` or `0x03` for handshakes/reading info. |
-| 11 - 12 | Always `0x00`  |
+| 10 | Most of the time `0x02` for changing a setting. Sometimes `0x04`, `0x03` or `0x0d` for handshakes/reading info. |
+| 11 - 12 | Most of the time `0x00` except on some ping command that uses `0x01 0x01` |
 | 13 | Beeper Mode:<br>`0x40` = Beeper On<br>`0x80` = Beeper OFF |
 | 14 | Always `0x00` |
 | 15 | Fan Mode:<br>`0x02` = OFF<br>`0x03` = Normal<br>`0x05` = Natural<br>`0x07` = Sleep<br>`0x1b` = Auto |
@@ -951,6 +953,9 @@ Get Fan Settings/Handshake:
 Get Fan Serial:
 `aa 0b ff 00 00 00 00 00 00 07 00 ef`
 
+Regular ping?:
+`aa 14 fa 00 00 00 00 00 00 0d 01 01 00 00 00 00 00 00 00 00 e3`
+
 Make the pairing led flash:
 `aa 1e fa 00 00 00 00 00 00 64 00 00 00 00 03 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00`
 
@@ -963,6 +968,8 @@ And the MCU sends us some messages from time to time, that I haven't yet taken a
 `AA 1E FA 00 00 00 00 00 00 61 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 87`
 
 `AA 1E FA 00 00 00 00 00 00 63 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 85`
+
+It seems the MCU sends `...61...` then `...63...` expects the BL2028N to answer `...0d 01 01...` and then MCU sends `...61...`.
 
 That's great, we can most definitely replay the commands that are sent, but in order to be able to change a single setting, we absolutely need to understand the **checksum**, otherwise the MCU just refuses our commands.
 
