@@ -32,6 +32,7 @@ Little did I know, this was the start of a great adventure... 🧝🗡️🏹
 - [Thanks](#thanks)
 - [Intro](#intro)
 - [Table of contents](#table-of-contents)
+- [The Story](#the-story)
     - [Intro](#intro)
     - [The Current Integrations](#the-current-integrations)
     - [The Android Apps](#the-android-apps)
@@ -54,7 +55,7 @@ Little did I know, this was the start of a great adventure... 🧝🗡️🏹
 - [The Howto](#the-howto)
     - [Create your ESPHome environment](#create-your-esphome-environment)
     - [Get the Dreo YAML file](#get-the-dreo-yaml-file)
-    - [Build the image](#build-the-image)
+    - [Build the ESPHome image](#build-the-esphome-image)
     - [Upload your OTA Update](#upload-your-ota-update)
 - [Where do we go from here / What's left to tackle](#where-do-we-go-from-here--whats-left-to-tackle)
 - [FAQ](#faq)
@@ -66,6 +67,7 @@ Little did I know, this was the start of a great adventure... 🧝🗡️🏹
 
 <!-- /TOC -->
 
+# The Story
 You can directly skip to the [Howto](#the-howto) if you don't care for this.
 
 ## Intro
@@ -917,6 +919,7 @@ sendend
 recv: len=40,buf=aa 27 fa 00 00 00 00 00 00 02 00 00 08 00 03 02 00 00 20 02 00 00 00 53 00 00 00 00 00 40 00 00 01 02 00 00 00 00 00 18 
 get ack1
 ```
+
 ### Change Fan Settings Byte Map
 
 
@@ -1191,6 +1194,7 @@ If you're skilled and motivated, feel free to fork this repo and tackle this lis
 - [ ] Re-implement the "long press on oscillate" to reset the wifi.
 
 # FAQ
+
 ## When is XXXXX going to be supported?
 I don't plan on maintaining this other than for my direct immediate needs. Unfortunately I am quite busy and run multiple projects in parallel, and would be quite happy if someone else with more advanced ESPHome knowledge would fork this and add more features. I shared as much information as possible in that repo so that others could take over should they feel the desire to do so.
 
