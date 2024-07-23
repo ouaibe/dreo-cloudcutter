@@ -940,7 +940,7 @@ get ack1
 | 15 | Fan Mode:<br>`0x02` = OFF<br>`0x03` = Normal<br>`0x05` = Natural<br>`0x07` = Sleep<br>`0x1b` = Auto |
 | 16 | Fan Speed: From `0x01` to `0xC` (I have not tested more than `0xC` as it might break the fan)  |
 | 17 - 18 | Always `0x00`  |
-| 18| Oscillation Angle:<br>`0x00` = OFF <br> `0x11` = 30 Degrees<br>`0x21` = 60 Degrees<br>`0x31` = 90 Degrees<br>`0x41` = 120 Degrees<br>(It actually appears only the 1st nibble is used for that, so `0x10`, `0x20`, `0x30`, `0x40` might work also) |
+| 18| Oscillation Angle:<br>`0x00` = OFF <br> `0x11` = 30 Degrees<br>`0x21` = 60 Degrees<br>`0x31` = 90 Degrees<br>`0x41` = 120 Degrees<br>(The 1st nibble is the angle, the 2nd nibble is the "On/OFF" toggle, so `0x10`, `0x20`, `0x30`, `0x40` might work also, but not turn it on.) |
 | 19 | Always `0x02` |
 | 20 | Timer Hours On (in conjunction with byte #24):<br> `0xc0` = Cancel Timer<br> `0xa1` = 1st Nibble "hours ON", 2nd Nibble "How many Hours"<br>Ex: (this still has to be further investigated) `ab xx xx xx 70` = 11h57min, `af xx xx xx 80` = 15h58 min. |
 | 21 - 22 | Always `0x00`   |
