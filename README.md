@@ -1216,11 +1216,11 @@ If you didn't, and can't find the ESPHome backup AP, or something went awfully w
 # Where do we go from here / What's left to tackle
 If you're skilled and motivated, feel free to fork this repo and tackle this list of challenges:
 
-- [ ] Finish the bi-directionnal integration and read the config from the UART traffic sent by the MCU (As well as the temperature).
+- [X] Finish the bi-directionnal integration and read the config from the UART traffic sent by the MCU (As well as the temperature).
 - [ ] Build a real ESPHome component in C++ instead of the Lambdas that I used in the `.yaml` file.
 - [ ] Add support for other fans.
 - [ ] Add support for the fan timer.
-- [ ] Re-implement the "long press on oscillate" to reset the wifi.
+- [/] Re-implement the "long press on oscillate" to reset the wifi.
 
 # FAQ
 
