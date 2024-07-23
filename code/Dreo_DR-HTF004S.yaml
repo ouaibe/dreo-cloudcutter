@@ -12,8 +12,8 @@ bk72xx:
   board: generic-bk7231n-qfn32-tuya
   framework:
     version: latest
-    loglevel: debug
-    debug:
+    loglevel: debug # Turn this off if you don't need it
+    debug: # Turn this off if you don't need it
       - wifi
       - ota
       - client
@@ -24,7 +24,7 @@ bk72xx:
 
 # Enable logging
 logger:
-  level: DEBUG
+  level: DEBUG # Turn this off if you don't need it
   
 
 wifi:
@@ -62,6 +62,133 @@ uart:
   debug:
     direction: BOTH
     dummy_receiver: true
+    after:
+      delimiter: "\n"
+    sequence:
+      - lambda: |-
+          UARTDebug::log_string(direction, bytes);
+          if (direction == UART_DIRECTION_RX) { // Process the bytes incomming. We do not validate the checksum for now.
+            // Validate we have the settings read return starting with `AA 27 FA 00 ... 03 or 04`. 03 = Read settings, 04 = Settings changed physically on device
+            if (bytes.size() == 40 && bytes[0] == 0xAA && bytes[1] == 0x27 && bytes[2] == 0xFA && bytes[3] == 0x00 && ( bytes[9] == 0x03 || bytes[9] == 0x04)) {
+              
+              // Do not send the MCU an updated settings since we just read it from it. - Poor man's semaphore.
+              id(disable_send_fan_command) = true;
+
+              // We read the settings and change the globals accordingly.
+
+              // Read Temperature
+              ESP_LOGD("main", "We read 0x%02X temperature.", bytes[23] );
+              id(temp_fan).publish_state( (float) bytes[23] ); 
+
+              // Read Beeper
+              if (bytes[12] == 0x04) {
+              ESP_LOGD("main", "We read 'Sound On'");
+                id(fan_beeper).publish_state("Sound On");
+              } else if (bytes[12] == 0x08) {
+              ESP_LOGD("main", "We read 'Sound Off'");
+                id(fan_beeper).publish_state("Sound Off");
+              }
+
+              // Read Adaptive Display
+              if (bytes[29] == 0x40) {
+                ESP_LOGD("main", "We read 'Adaptive Display On'");
+                id(fan_adaptive_display).publish_state("Adaptive Display On");
+              } else if (bytes[29] == 0x80) {
+                ESP_LOGD("main", "We read 'Adaptive Display Off'");
+                id(fan_adaptive_display).publish_state("Adaptive Display Off");
+              }
+
+              // Read Fan Mode
+              if (bytes[14] == 0x1B) {
+                ESP_LOGD("main", "We read Fan Mode:'Auto'");
+                id(fan_mode).publish_state("Auto");
+              } else if (bytes[14] == 0x05) {
+                ESP_LOGD("main", "We read Fan Mode:'Natural'");
+                id(fan_mode).publish_state("Natural");
+              } else if (bytes[14] == 0x03) {
+                ESP_LOGD("main", "We read Fan Mode:'Normal'");
+                id(fan_mode).publish_state("Normal");
+              } else if (bytes[14] == 0x07) {
+                ESP_LOGD("main", "We read Fan Mode:'Sleep'");
+                id(fan_mode).publish_state("Sleep");
+              } else if (bytes[14] == 0x02) {
+                ESP_LOGD("main", "We read Fan Mode:'OFF'");
+                id(fan_mode).publish_state("OFF");
+              }
+
+              // Read Fan Speed
+              std::string fan_speed_new = std::to_string(bytes[15]);
+              ESP_LOGD("main", "We read Fan Speed: '%s'", fan_speed_new.c_str());
+              id(fan_speed).publish_state(fan_speed_new.c_str());
+
+              // Read Oscillation
+              if (bytes[18] == 0x11) {
+                ESP_LOGD("main", "We read Oscillation:'30 Degrees'");
+                id(fan_oscillation).publish_state("30 Degrees");
+              } else if (bytes[18] == 0x21) {
+                ESP_LOGD("main", "We read Oscillation:'60 Degrees'");
+                id(fan_oscillation).publish_state("60 Degrees");
+              } else if (bytes[18] == 0x31) {
+                ESP_LOGD("main", "We read Oscillation:'90 Degrees'");
+                id(fan_oscillation).publish_state("90 Degrees");
+              } else if (bytes[18] == 0x41) {
+                ESP_LOGD("main", "We read Oscillation:'120 Degrees'");
+                id(fan_oscillation).publish_state("120 Degrees");
+              } else if (bytes[18] == 0x00 || bytes[18] == 0x20 || bytes[18] == 0x30 || bytes[18] == 0x40) {
+                ESP_LOGD("main", "We read Oscillation:'OFF' - 0x%02X", bytes[18]);
+                id(fan_oscillation).publish_state("OFF");
+              }
+
+              id(disable_send_fan_command) = false; // Re-enable sending updates to the MCU.
+
+            } else if (bytes.size() == 31 && bytes[0] == 0xAA && bytes[1] == 0x1E && bytes[2] == 0xFA && bytes[9] == 0x63) {
+
+              // We have been asked for a ping by the MCU `AA 1E FA 00 00 00 00 00 00 63...`
+              ESP_LOGD("main", "Received a 'Ping Request' from MCU.");
+              // Respond with a ping `aa 14 fa 00 00 00 00 00 00 0d 01 01 00 00 00 00 00 00 00 00 e3`
+              std::vector<uint8_t> response = {0xAA, 0x0B, 0xFA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0xF8};
+              id(uart_bus).write_array(response.data(), response.size());
+
+            } else if (bytes.size() == 32 && bytes[0] == 0xAA && bytes[1] == 0x1F && bytes[2] == 0xFA && bytes[9] == 0x64 && bytes[15] == 0x01) {
+
+              // We have received a "Pairing Mode On" from MCU `aa 1f fa 00 00 00 00 00 00 64 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 82`
+              ESP_LOGD("main", "Received a 'Pairing Mode ON' request from MCU.");
+              for (auto byte : bytes) {
+                ESP_LOGD("main", "0x%02X", byte);
+              }
+
+              // We set the flashing light
+              ESP_LOGD("main", "Setting the light to flash.");
+              std::vector<uint8_t> response = {0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+              id(uart_bus).write_array(response.data(), response.size());
+
+            } else {
+              ESP_LOGD("main", "Unknown UART Command received from MCU");
+              for (auto byte : bytes) {
+                ESP_LOGD("main", "0x%02X", byte);
+              }
+            }
+          } else {
+            ESP_LOGD("main", "We sent %d bytes.", bytes.size() );
+            for (auto byte : bytes) {
+                ESP_LOGD("main", "0x%02X", byte);
+            }
+          }
+
+# Send a settings readout every 5 seconds.
+interval:
+  - interval: 5s
+    then:
+      - uart.write: [0xaa, 0x0a, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xf9]
+
+# Temperature sensor, changed by the UART lambda
+sensor:
+  - platform: template
+    id: "temp_fan"
+    filters:
+      - lambda: return (x - 32.0) * (5.0/9.0); # Convert F value to C
+    unit_of_measurement: "°C"
+    name: "Air Temperature"
 
 # Define global variables
 globals:
@@ -95,6 +222,11 @@ globals:
     type: std::string
     restore_value: true
     initial_value: '"Adaptive Display On"'
+
+  - id: disable_send_fan_command
+    type: bool
+    restore_value: no
+    initial_value: 'true'
 
 # Define select components
 select:
@@ -183,100 +315,104 @@ switch:
     turn_on_action:
       - lambda: |-
           std::vector<uint8_t> bytestream = {0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+          
+          // Send the bytestream via UART only if we were not updating settings reading from the MCU.
+          if (!id(disable_send_fan_command)) {
 
-          ESP_LOGD("custom", "Initial bytestream: ");
-          for (auto byte : bytestream) {
-            ESP_LOGD("custom", "0x%02X", byte);
+            ESP_LOGD("custom", "Initial bytestream: ");
+            for (auto byte : bytestream) {
+              ESP_LOGD("custom", "0x%02X", byte);
+            }
+
+            // Modify the mode byte
+            // Remember the mode, only for the "ON" modes.
+            if (id(fan_mode).state == "Auto") {
+              id(fan_mode_memory_global) = id(fan_mode).state;
+              bytestream[14] = 0x1b;
+            } else if (id(fan_mode).state == "Natural") {
+              id(fan_mode_memory_global) = id(fan_mode).state;
+              bytestream[14] = 0x05;
+            } else if (id(fan_mode).state == "Normal") {
+              id(fan_mode_memory_global) = id(fan_mode).state;
+              bytestream[14] = 0x03;
+            } else if (id(fan_mode).state == "Sleep") {
+              id(fan_mode_memory_global) = id(fan_mode).state;
+              bytestream[14] = 0x07;
+            } else { // OFF
+              bytestream[14] = 0x02;
+            }
+
+            // Modify the speed byte
+            int speed = atoi(id(fan_speed).state.c_str());
+            bytestream[15] = speed;
+
+            // Modify the oscillation byte
+            // 1st nibble = Angle, 2nd nibble = activate (0 not needed)
+            if (id(fan_oscillation).state == "30 Degrees") {
+              bytestream[18] = 0x11;
+            } else if (id(fan_oscillation).state == "60 Degrees") {
+              bytestream[18] = 0x21;
+            } else if (id(fan_oscillation).state == "90 Degrees") {
+              bytestream[18] = 0x31;
+            } else if (id(fan_oscillation).state == "120 Degrees") {
+              bytestream[18] = 0x41;
+            } else { // OFF
+              bytestream[18] = 0x00;
+            }
+
+            // Modify the beeper byte
+            if (id(fan_beeper).state == "Sound On") {
+              bytestream[12] = 0x04;
+            } else if (id(fan_beeper).state == "Sound Off") {
+              bytestream[12] = 0x08;
+            }
+
+            // Modify the adaptive display byte
+            if (id(fan_adaptive_display).state == "Adaptive Display On") {
+              bytestream[29] = 0x40;
+            } else if (id(fan_adaptive_display).state == "Adaptive Display Off") {
+              bytestream[29] = 0x80;
+            }
+
+            ESP_LOGD("custom", "Modified bytestream before checksum: ");
+            for (auto byte : bytestream) {
+              ESP_LOGD("custom", "0x%02X", byte);
+            }
+
+            // Calculate checksum:
+            // Ignore 1st byte if it's 0xAA
+            // negative sum of remaining bytes
+            // minus twice the length (2nd byte of stream)
+            // modulo 256 (0x100)
+
+            int start = 0;
+
+            // Ignore the first byte if it is 0xAA (but keep it in final stream)
+            if (bytestream[0] == 0xAA) {
+              start = 1;
+            }
+
+            // Initialize checksum with the first useful byte (the length)
+            int checksum = bytestream[start];
+
+            // Negative sum of remaining bytes
+            for (int i = start + 1; i < bytestream.size(); i++) {
+              checksum -= bytestream[i];
+            }
+
+            // Substract 2x the length
+            checksum = (checksum - 2 * bytestream[start]) % 0x100;
+
+            bytestream.push_back(checksum);
+
+            ESP_LOGD("custom", "Bytestream with checksum: ");
+            for (auto byte : bytestream) {
+              ESP_LOGD("custom", "0x%02X", byte);
+            }
+
+            // Send the bytestream via UART
+            id(uart_bus).write_array(bytestream.data(), bytestream.size());
           }
-
-          // Modify the mode byte
-          // Remember the mode, only for the "ON" modes.
-          if (id(fan_mode).state == "Auto") {
-            id(fan_mode_memory_global) = id(fan_mode).state;
-            bytestream[14] = 0x1b;
-          } else if (id(fan_mode).state == "Natural") {
-            id(fan_mode_memory_global) = id(fan_mode).state;
-            bytestream[14] = 0x05;
-          } else if (id(fan_mode).state == "Normal") {
-            id(fan_mode_memory_global) = id(fan_mode).state;
-            bytestream[14] = 0x03;
-          } else if (id(fan_mode).state == "Sleep") {
-            id(fan_mode_memory_global) = id(fan_mode).state;
-            bytestream[14] = 0x07;
-          } else { // OFF
-            bytestream[14] = 0x02;
-          }
-
-          // Modify the speed byte
-          int speed = atoi(id(fan_speed).state.c_str());
-          bytestream[15] = speed;
-
-          // Modify the oscillation byte
-          // 1st nibble = Angle, 2nd nibble = activate (0 not needed)
-          if (id(fan_oscillation).state == "30 Degrees") {
-            bytestream[18] = 0x11;
-          } else if (id(fan_oscillation).state == "60 Degrees") {
-            bytestream[18] = 0x21;
-          } else if (id(fan_oscillation).state == "90 Degrees") {
-            bytestream[18] = 0x31;
-          } else if (id(fan_oscillation).state == "120 Degrees") {
-            bytestream[18] = 0x41;
-          } else { // OFF
-            bytestream[18] = 0x00;
-          }
-
-          // Modify the beeper byte
-          if (id(fan_beeper).state == "Sound On") {
-            bytestream[12] = 0x04;
-          } else if (id(fan_beeper).state == "Sound Off") {
-            bytestream[12] = 0x08;
-          }
-
-          // Modify the adaptive display byte
-          if (id(fan_adaptive_display).state == "Adaptive Display On") {
-            bytestream[29] = 0x40;
-          } else if (id(fan_adaptive_display).state == "Adaptive Display Off") {
-            bytestream[29] = 0x80;
-          }
-
-          ESP_LOGD("custom", "Modified bytestream before checksum: ");
-          for (auto byte : bytestream) {
-            ESP_LOGD("custom", "0x%02X", byte);
-          }
-
-          // Calculate checksum:
-          // Ignore 1st byte if it's 0xAA
-          // negative sum of remaining bytes
-          // minus twice the length (2nd byte of stream)
-          // modulo 256 (0x100)
-
-          int start = 0;
-
-          // Ignore the first byte if it is 0xAA (but keep it in final stream)
-          if (bytestream[0] == 0xAA) {
-            start = 1;
-          }
-
-          // Initialize checksum with the first useful byte (the length)
-          int checksum = bytestream[start];
-
-          // Negative sum of remaining bytes
-          for (int i = start + 1; i < bytestream.size(); i++) {
-            checksum -= bytestream[i];
-          }
-
-          // Substract 2x the length
-          checksum = (checksum - 2 * bytestream[start]) % 0x100;
-
-          bytestream.push_back(checksum);
-
-          ESP_LOGD("custom", "Bytestream with checksum: ");
-          for (auto byte : bytestream) {
-            ESP_LOGD("custom", "0x%02X", byte);
-          }
-
-          // Send the bytestream via UART
-          id(uart_bus).write_array(bytestream.data(), bytestream.size());
 
 # Define switches for turning the fan on and off, re-using the "fan mode" options
   - platform: template
@@ -305,16 +441,19 @@ switch:
 
 # Static UART commands taken from previous traffic dump - used for tests
   - platform: uart
+    entity_category: 'diagnostic'
     name: "UART - Turn fan ON/OFF"
     data:
         turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x02, 0x00, 0x00, 0x20, 0x02, 0x00, 0x00, 0x00, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6c]
         turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x84]
   - platform: uart
+    entity_category: 'diagnostic'
     name: "UART - Beep ON/OFF"
     data:
       turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x04, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7E]
       turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x08, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A]
   - platform: uart
+    entity_category: 'diagnostic'
     name: "UART - Adaptative Display ON/OFF"
     data:
       turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x41]

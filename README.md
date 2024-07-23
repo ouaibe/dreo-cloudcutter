@@ -760,6 +760,8 @@ bandgap_calm_in_efuse=0x34
 ```
 Nice, we're in!
 
+*Also, this message: `go os_addr(0x10000)..........` confirms the base address really is `0x10000`...*
+
 Let's send some HTTP traffic, for good measure and confirm the function we were looking at was the console logger:
 
 ```console
