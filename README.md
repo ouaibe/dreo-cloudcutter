@@ -966,6 +966,27 @@ Regular ping?:
 Make the pairing led flash:
 `aa 1e fa 00 00 00 00 00 00 64 00 00 00 00 03 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00`
 
+Make the pairing led steady:
+`aa 14 fa 00 00 00 00 00 00 0d 01 03 00 00 00 00 00 00 00 00 e1`
+
+There also exist a few variations of this command which I'm not entirely sure do what:
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 00 00 00 00 00 00 00 00 00 e4`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 00 00 00 00 00 00 00 00 00 e4`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 01 00 00 00 00 00 00 00 00 e3`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 02 00 00 00 00 00 00 00 00 e2`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 03 00 00 00 00 00 00 00 00 e1`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 04 00 00 00 00 00 00 00 00 e0`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 05 00 00 00 00 00 00 00 00 df`
+
+`aa 14 fa 00 00 00 00 00 00 0d 01 06 00 00 00 00 00 00 00 00 de`
+
 **8051 MCU -> BL2028N**
 
 Set the BL2028N in pairing mode:
