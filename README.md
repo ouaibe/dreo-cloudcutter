@@ -1182,9 +1182,7 @@ Onto sharing with others...
 
 Note that the YAML file makes use of C++ Lambdas to support UART communications with the MCU and tries to restore the settings for when the fan was turned off.
 
-This is **not** a bi-directional integration where we re-read the MCU's settings. For now this also means that the temperature reading isn't supported.
-
-Also, the timer function isn't supported, HA has a much, much more powerful schedule management than the built-in timer.
+Note that he timer function isn't supported since HA has a much, much more powerful schedule management than the built-in fan timer.
 
 ## Build the ESPHome image
 
