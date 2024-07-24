@@ -29,6 +29,7 @@ If applicable, add screenshots to help explain your problem.
  - MCU Version:
 
 **Information about the fan Webserver endpoints:**
+ - Did you put your fan in "pairing mode" prior?
  - Did you try other endpoints (/mcu.html, /devinfoget, etc.)?
  - Which one worked and what was the response you got?
 
