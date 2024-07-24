@@ -63,14 +63,14 @@ uart:
     direction: BOTH
     dummy_receiver: true
     after:
-      delimiter: "\n"
+      delimiter: "\r\n"
     sequence:
       - lambda: |-
           UARTDebug::log_string(direction, bytes);
           if (direction == UART_DIRECTION_RX) { // Process the bytes incomming. We do not validate the checksum for now.
             // Validate we have the settings read return starting with `AA 27 FA 00 ... 03 or 04`. 03 = Read settings, 04 = Settings changed physically on device
             if (bytes.size() == 40 && bytes[0] == 0xAA && bytes[1] == 0x27 && bytes[2] == 0xFA && bytes[3] == 0x00 && ( bytes[9] == 0x03 || bytes[9] == 0x04)) {
-              
+            
               // Do not send the MCU an updated settings since we just read it from it. - Poor man's semaphore.
               id(disable_send_fan_command) = true;
 
@@ -80,63 +80,138 @@ uart:
               ESP_LOGD("main", "We read 0x%02X temperature.", bytes[23] );
               id(temp_fan).publish_state( (float) bytes[23] ); 
 
-              // Read Beeper
+              // Read Beeper, only change it if different than what we know.
               if (bytes[12] == 0x04) {
               ESP_LOGD("main", "We read 'Sound On'");
-                id(fan_beeper).publish_state("Sound On");
+                if(id(fan_beeper).state != "Sound On"){
+                  ESP_LOGD("main", "Changing Fan Beeper setting to 'Sound On'");
+                  id(fan_beeper).publish_state("Sound On");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Beeper settings.");
+                }
               } else if (bytes[12] == 0x08) {
               ESP_LOGD("main", "We read 'Sound Off'");
-                id(fan_beeper).publish_state("Sound Off");
+                if(id(fan_beeper).state != "Sound Off"){
+                  ESP_LOGD("main", "Changing Fan Beeper setting to 'Sound Off'");
+                  id(fan_beeper).publish_state("Sound Off");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Beeper settings.");
+                }
               }
 
-              // Read Adaptive Display
+              // Read Adaptive Display, only change it if different than what we know.
               if (bytes[29] == 0x40) {
                 ESP_LOGD("main", "We read 'Adaptive Display On'");
-                id(fan_adaptive_display).publish_state("Adaptive Display On");
+                if (id(fan_adaptive_display).state != "Adaptive Display On") {
+                  ESP_LOGD("main", "Changing Adaptive Display setting to 'Adaptive Display On'");
+                  id(fan_adaptive_display).publish_state("Adaptive Display On");
+                } else {
+                  ESP_LOGD("main", "Not changing Adaptive Display settings.");
+                }
               } else if (bytes[29] == 0x80) {
                 ESP_LOGD("main", "We read 'Adaptive Display Off'");
-                id(fan_adaptive_display).publish_state("Adaptive Display Off");
+                if (id(fan_adaptive_display).state != "Adaptive Display Off") {
+                  ESP_LOGD("main", "Changing Adaptive Display setting to 'Adaptive Display Off'");
+                  id(fan_adaptive_display).publish_state("Adaptive Display Off");
+                } else {
+                  ESP_LOGD("main", "Not changing Adaptive Display settings.");
+                }
               }
 
-              // Read Fan Mode
+              // Read Fan Mode, only change it if different than what we know.
               if (bytes[14] == 0x1B) {
                 ESP_LOGD("main", "We read Fan Mode:'Auto'");
-                id(fan_mode).publish_state("Auto");
+                if (id(fan_mode).state != "Auto") {
+                  ESP_LOGD("main", "Changing Fan Mode setting to 'Auto'");
+                  id(fan_mode).publish_state("Auto");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Mode settings.");
+                }
               } else if (bytes[14] == 0x05) {
                 ESP_LOGD("main", "We read Fan Mode:'Natural'");
-                id(fan_mode).publish_state("Natural");
+                if (id(fan_mode).state != "Natural") {
+                  ESP_LOGD("main", "Changing Fan Mode setting to 'Natural'");
+                  id(fan_mode).publish_state("Natural");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Mode settings.");
+                }
               } else if (bytes[14] == 0x03) {
                 ESP_LOGD("main", "We read Fan Mode:'Normal'");
-                id(fan_mode).publish_state("Normal");
+                if (id(fan_mode).state != "Normal") {
+                  ESP_LOGD("main", "Changing Fan Mode setting to 'Normal'");
+                  id(fan_mode).publish_state("Normal");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Mode settings.");
+                }
               } else if (bytes[14] == 0x07) {
                 ESP_LOGD("main", "We read Fan Mode:'Sleep'");
-                id(fan_mode).publish_state("Sleep");
+                if (id(fan_mode).state != "Sleep") {
+                  ESP_LOGD("main", "Changing Fan Mode setting to 'Sleep'");
+                  id(fan_mode).publish_state("Sleep");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Mode settings.");
+                }
               } else if (bytes[14] == 0x02) {
                 ESP_LOGD("main", "We read Fan Mode:'OFF'");
-                id(fan_mode).publish_state("OFF");
+                if (id(fan_mode).state != "OFF") {
+                  ESP_LOGD("main", "Changing Fan Mode setting to 'OFF'");
+                  id(fan_mode).publish_state("OFF");
+                } else {
+                  ESP_LOGD("main", "Not changing Fan Mode settings.");
+                }
               }
 
-              // Read Fan Speed
+              // Read Fan Speed, only change it if different than what we know.
               std::string fan_speed_new = std::to_string(bytes[15]);
               ESP_LOGD("main", "We read Fan Speed: '%s'", fan_speed_new.c_str());
-              id(fan_speed).publish_state(fan_speed_new.c_str());
+              if (id(fan_speed).state != fan_speed_new) {
+                ESP_LOGD("main", "Changing Fan Speed setting to '%s'", fan_speed_new.c_str());
+                id(fan_speed).publish_state(fan_speed_new.c_str());
+              } else {
+                ESP_LOGD("main", "Not changing Fan Speed settings.");
+              }
 
-              // Read Oscillation
+              // Read Oscillation, only change it if different than what we know.
               if (bytes[18] == 0x11) {
                 ESP_LOGD("main", "We read Oscillation:'30 Degrees'");
-                id(fan_oscillation).publish_state("30 Degrees");
+                if (id(fan_oscillation).state != "30 Degrees") {
+                  ESP_LOGD("main", "Changing Oscillation setting to '30 Degrees'");
+                  id(fan_oscillation).publish_state("30 Degrees");
+                } else {
+                  ESP_LOGD("main", "Not changing Oscillation settings.");
+                }
               } else if (bytes[18] == 0x21) {
                 ESP_LOGD("main", "We read Oscillation:'60 Degrees'");
-                id(fan_oscillation).publish_state("60 Degrees");
+                if (id(fan_oscillation).state != "60 Degrees") {
+                  ESP_LOGD("main", "Changing Oscillation setting to '60 Degrees'");
+                  id(fan_oscillation).publish_state("60 Degrees");
+                } else {
+                  ESP_LOGD("main", "Not changing Oscillation settings.");
+                }
               } else if (bytes[18] == 0x31) {
                 ESP_LOGD("main", "We read Oscillation:'90 Degrees'");
-                id(fan_oscillation).publish_state("90 Degrees");
+                if (id(fan_oscillation).state != "90 Degrees") {
+                  ESP_LOGD("main", "Changing Oscillation setting to '90 Degrees'");
+                  id(fan_oscillation).publish_state("90 Degrees");
+                } else {
+                  ESP_LOGD("main", "Not changing Oscillation settings.");
+                }
               } else if (bytes[18] == 0x41) {
                 ESP_LOGD("main", "We read Oscillation:'120 Degrees'");
-                id(fan_oscillation).publish_state("120 Degrees");
+                if (id(fan_oscillation).state != "120 Degrees") {
+                  ESP_LOGD("main", "Changing Oscillation setting to '120 Degrees'");
+                  id(fan_oscillation).publish_state("120 Degrees");
+                } else {
+                  ESP_LOGD("main", "Not changing Oscillation settings.");
+                }
               } else if (bytes[18] == 0x00 || bytes[18] == 0x20 || bytes[18] == 0x30 || bytes[18] == 0x40) {
                 ESP_LOGD("main", "We read Oscillation:'OFF' - 0x%02X", bytes[18]);
-                id(fan_oscillation).publish_state("OFF");
+                if (id(fan_oscillation).state != "OFF") {
+                  ESP_LOGD("main", "Changing Oscillation setting to 'OFF'");
+                  id(fan_oscillation).publish_state("OFF");
+                } else {
+                  ESP_LOGD("main", "Not changing Oscillation settings.");
+                }
               }
 
               id(disable_send_fan_command) = false; // Re-enable sending updates to the MCU.
@@ -158,6 +233,8 @@ uart:
 
               // We have received a "Pairing Mode On" from MCU `aa 1f fa 00 00 00 00 00 00 64 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 82`
               ESP_LOGD("main", "Received a 'Pairing Mode ON' request from MCU.");
+              // Confirm we have received it via answer `aa 1e fa 00 00 00 00 00 00 64 00 00 00 00 03 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7e`
+              
               for (auto byte : bytes) {
                 ESP_LOGD("main", "0x%02X", byte);
               }
