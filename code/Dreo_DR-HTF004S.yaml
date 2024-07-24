@@ -431,10 +431,12 @@ switch:
   
   # Simple static UART commands to get settings, serial, etc.
   - platform: uart
+    entity_category: 'diagnostic'
     name: "Get Settings & Temp (5s)"
     data: [0xaa, 0x0a, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xf9]
     send_every: 5s
   - platform: uart
+    entity_category: 'diagnostic'
     name: "Get Serial (Once)"
     data: [0xaa, 0x0b, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0xef]
 
