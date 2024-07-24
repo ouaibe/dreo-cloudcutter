@@ -1200,12 +1200,12 @@ If you use the second route, you can even validate the pre-encryption OTA file t
 Once you have your encrypted and gzipped `.rbl` handy (the encryption and zipping are done automatically by ESPHome), you can:
 1. Put the fan back into pairing mode (hold the "oscillation" button for 5s).
 2. It should expose an AP named `Dreo...` (you can find the exact name in the original firmware if you have a copy of it, in a hex editor, search for `HTFfirm` ASCII string)
-3. Connect to the AP and let it provide you with an address. It should take an IP in the `192.168.0.x` subnet.
-4. Now that you're connected, just validate the device information via the `/devinfoget` command and ensure you have the right fan, this is the last check before you're going to flash your device.
-5. Navigate to `http://192.168.0.x/model.html`
-6. Upload your `.rbl` via model.html and do a little 🙏
+3. Connect to the AP and let it provide you with an address. Your fan should have the IP `192.168.0.1` and your computer should be given an IP in the `192.168.0.x` subnet. This is hardcoded in the firmware so if that's not the case, something went wrong.
+4. Now that you're connected, just validate the device information via the `/devinfoget` command (e.g. `curl -vvvk http://192.168.0.1/devinfoget` and ensure you have the right fan, this is the last check before you're going to flash your device.
+5. Navigate to `http://192.168.0.1/model.html` (If your fan has another IP it'll be at that IP - But that shouldn't be the case.)
+6. Upload your `.rbl` file obtained earlier via model.html and do a little 🙏
    - If the image is recognized (encrypted/gzipped correctly) the page will take some time to load/provide a response, and the device will actually reboot in ESPHome with the config you provided.
-   - If the page instantaneously breaks like a `404/connection interrupted` it means the image wasn't recognized for some reason.
+   - If the page instantaneously breaks like a `404/connection interrupted` it means the image wasn't recognized for some reason (Wrong file, wrong compression, wrong encryption, wrong keys, etc.).
 
 The device should now reboot, and connect to your wifi where you pointed it in your `.yaml` file. There's also the backup `ap:` config in case it think it broke, and you should be able to connect to this AP from ESPHome if something went wrong, to fix it.
 
