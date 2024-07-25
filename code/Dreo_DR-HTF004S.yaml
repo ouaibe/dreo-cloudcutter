@@ -40,6 +40,7 @@ wifi:
   ap:
     ssid: "Dreo Bl2028N Fallback Hotspot"
     password: "<YOUR_FALLBACK_AP_PW_HERE>"
+  power_save_mode: none # Use full power wifi all the time
 
 web_server:
   port: 80
@@ -234,7 +235,7 @@ uart:
               // We have received a "Pairing Mode On" from MCU `aa 1f fa 00 00 00 00 00 00 64 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 82`
               ESP_LOGD("main", "Received a 'Pairing Mode ON' request from MCU.");
               // Confirm we have received it via answer `aa 1e fa 00 00 00 00 00 00 64 00 00 00 00 03 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7e`
-              
+
               for (auto byte : bytes) {
                 ESP_LOGD("main", "0x%02X", byte);
               }
