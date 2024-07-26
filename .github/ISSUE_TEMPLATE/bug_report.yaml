@@ -1,0 +1,93 @@
+name: 🐞 Bug
+description: File a bug/issue
+title: "[BUG] <title>"
+labels: ["Bug", "Triage"]
+assignees: ouaibe
+
+body:
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: Please search to see if an issue already exists for the bug you encountered.
+    options:
+    - label: I have searched the existing issues.
+      required: true
+- type: checkboxes
+  attributes:
+    label: Is this question already covered by the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#faq)?
+    description: Please read the FAQ before asking a question that might already be answered there.
+    options:
+    - label: I have read the FAQ.
+      required: true
+- type: checkboxes
+  attributes:
+    label: Are you trying to run ESPHome on another Dreo Fan than the [DR-HTFf004S](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans)?
+    description: Please read the FAQ as other Dreo fans are not supported and very likely to break.
+    options:
+    - label: I have read the FAQ.
+      required: true
+- type: textarea
+  attributes:
+    label: Your Fan Model.
+    description: Please enter your fan model.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Your Fan Firmware Version.
+    description: Please enter your fan's firmware version.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Your Fan MCU Version.
+    description: Please enter your fan's MCU version.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Current Behavior
+    description: A concise description of what you're experiencing.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A concise description of what you expected to happen.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Steps To Reproduce, including errors you've seen.
+    description: Steps to reproduce the behavior, including errors you've seen.
+    placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error (Add your errors here)
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Steps To Reproduce, including errors you've seen.
+    description: Steps to reproduce the behavior, including errors you've seen.
+    placeholder: |
+        **Information about the fan Webserver endpoints:**
+        - Did you put your fan in "pairing mode" prior?
+        - Did you try other endpoints (/mcu.html, /devinfoget, etc.)?
+        - Which one worked and what was the response you got?
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Information about your browser environment.
+    description: |
+      examples:
+        - **Browser**: Firefox
+        - **Version**: 128
+    value: |
+        - Browser:
+        - Version:
+    render: markdown
+  validations:
+    required: false
