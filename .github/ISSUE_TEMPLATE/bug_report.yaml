@@ -19,17 +19,20 @@ body:
     options:
     - label: I have read the FAQ.
       required: true
-- type: checkboxes
+- type: dropdown
+  id: fan_model
   attributes:
-    label: Are you trying to run ESPHome on another Dreo Fan than the DR-HTFf004S?
+    label: Are you trying to run ESPHome on another Dreo Fan than the DR-HTF004S?
     description: Please read the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans) as other Dreo fans are not supported and very likely to break.
     options:
-    - label: I have read the FAQ.
+    - This is another Dreo fan.
+    - This is NOT a Dreo fan.
+    - This is a DR-HTF004S.
       required: true
 - type: input
   attributes:
-    label: Your Fan Model.
-    description: Please enter your fan model.
+    label: Your Fan Model (ONLY the DR-HTF004S is supported at the moment).
+    description: Please enter your fan model, as noted in the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans), other Dreo fans are not supported and very likely to break.
   validations:
     required: true
 - type: input
