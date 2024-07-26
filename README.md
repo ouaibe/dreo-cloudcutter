@@ -3,7 +3,7 @@ A hacking adventure... 🧝💻🔓
 
 # Disclaimer
 
-This information is provided for educational purposes only, I'm not responsible if you break, or brick your equipment following some instructions provided herein (see [License](LICENSE)). It is very likely that you will do so, and at the very least you should be prepared to connect via UART to your device.
+This information is provided for educational purposes only, I'm not responsible if you break, or brick your equipment following some instructions provided herein (see [License](LICENSE)). It is very likely that you will do so, and at the very least you should be prepared to connect via UART to your device. ⚠️🚨 DO NOT use any of this information to try and OTA on [another Dreo fan](#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans).
 
 # Thanks
 
@@ -61,7 +61,7 @@ Little did I know, this was the start of a great adventure... 🧝🗡️🏹
 - [FAQ](#faq)
     - [When is XXXXX going to be supported?](#when-is-xxxxx-going-to-be-supported)
     - [It doesn't work on my fan / I Bricked it / etc.](#it-doesnt-work-on-my-fan--i-bricked-it--etc)
-    - [Does this work with other Dreo Pilot Max DBTF04S, DTTF04S?](#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s)
+    - [Does this work with other Dreo Pilot Max DBTF04S, DTTF04S or other Dreo Fans?](#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans)
     - [Are you going to maintain that ESPHome module?](#are-you-going-to-maintain-that-esphome-module)
     - [Why didn't you implement MQTTS support for the control of the device?](#why-didnt-you-implement-mqtts-support-for-the-control-of-the-device)
 
@@ -1199,7 +1199,7 @@ Once you have your encrypted and gzipped `.rbl` handy (the encryption and zippin
 1. Put the fan back into pairing mode (hold the "oscillation" button for 5s).
 2. It should expose an AP named `Dreo...` (you can find the exact name in the original firmware if you have a copy of it, in a hex editor, search for `HTFfirm` ASCII string)
 3. Connect to the AP and let it provide you with an address. Your fan should have the IP `192.168.0.1` and your computer should be given an IP in the `192.168.0.x` subnet. This is hardcoded in the firmware so if that's not the case, something went wrong.
-4. Now that you're connected, just validate the device information via the `/devinfoget` command (e.g. `curl -vvvk http://192.168.0.1/devinfoget` and ensure you have the right fan, this is the last check before you're going to flash your device.
+4. Now that you're connected, just validate the device information via the `/devinfoget` command (e.g. `curl -vvvk http://192.168.0.1/devinfoget` and ensure you have the right fan ⚠️🚨 DO NOT use any of this information to try and OTA on [any other Dreo fan](#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans), this is the last check before you're going to flash your device.
 5. Navigate to `http://192.168.0.1/model.html` (If your fan has another IP it'll be at that IP - But that shouldn't be the case.)
 6. Upload your `.rbl` file obtained earlier via model.html and do a little 🙏
    - If the image is recognized (encrypted/gzipped correctly) the page will take some time to load/provide a response, and the device will actually reboot in ESPHome with the config you provided.
@@ -1226,15 +1226,15 @@ If you're skilled and motivated, feel free to fork this repo and tackle this lis
 I don't plan on maintaining this other than for my direct immediate needs. Unfortunately I am quite busy and run multiple projects in parallel, and would be quite happy if someone else with more advanced ESPHome knowledge would fork this and add more features. I shared as much information as possible in that repo so that others could take over should they feel the desire to do so.
 
 ## It doesn't work on my fan / I Bricked it / etc.
-Unfortunately, as stated in the disclaimer, this guide only made available for informational purposes, and although the approach might work with other Dreo fans, or even different models of the same fan, it is not an assumption one can make without risking to brick your fan.
+Unfortunately, as stated in the disclaimer, this guide only made available for informational purposes, and although the approach might work with other Dreo fans, or even different models of the same fan, it is not an assumption one can make without risking to brick your fan. There is no backup of your fan's firmware in case you brick it since you didn't dump it via hardware/UART access, if the OTA fails, the fan is bricked.
 
-Dreo might have used a completely different application/firmware, a different MCU with a different protocol.
+Also, Dreo might have used a completely different application/firmware, a different MCU with a different protocol.
 The only way to truly know this is to dump your firmware using UART, validate it's the same version and/or fork this repo to add your modifications.
 
-## Does this work with other Dreo Pilot Max (DBTF04S, DTTF04S)?
-Unfortunately, as stated in the disclaimer, this guide only made available for informational purposes, and although the approach might work with other Dreo fans, or even different models of the same fan, it is not an assumption one can make without risking to brick your fan.
+## Does this work with other Dreo Pilot Max (DBTF04S, DTTF04S) or other Dreo Fans?
+Unfortunately, as stated in the disclaimer, this guide only made available for informational purposes, and although the approach might work with other Dreo fans, or even different models of the same fan, it is not an assumption one can make without risking to brick your fan. There is no backup of your fan's firmware in case you brick it since you didn't dump it via hardware/UART access, if the OTA fails, the fan is bricked.
 
-Dreo might have used a completely different application/firmware, a different MCU with a different protocol.
+Also, Dreo might have used a completely different application/firmware, a different MCU with a different protocol.
 The only way to truly know this is to dump your firmware using UART, validate it's the same version and/or fork this repo to add your modifications.
 
 ## Are you going to maintain that ESPHome module?
