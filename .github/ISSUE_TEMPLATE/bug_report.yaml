@@ -14,31 +14,31 @@ body:
       required: true
 - type: checkboxes
   attributes:
-    label: Is this question already covered by the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#faq)?
-    description: Please read the FAQ before asking a question that might already be answered there.
+    label: Is this question already covered by the FAQ?
+    description: Please read the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#faq) before asking a question that might already be answered there.
     options:
     - label: I have read the FAQ.
       required: true
 - type: checkboxes
   attributes:
-    label: Are you trying to run ESPHome on another Dreo Fan than the [DR-HTFf004S](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans)?
-    description: Please read the FAQ as other Dreo fans are not supported and very likely to break.
+    label: Are you trying to run ESPHome on another Dreo Fan than the DR-HTFf004S?
+    description: Please read the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans) as other Dreo fans are not supported and very likely to break.
     options:
     - label: I have read the FAQ.
       required: true
-- type: textarea
+- type: input
   attributes:
     label: Your Fan Model.
     description: Please enter your fan model.
   validations:
     required: true
-- type: textarea
+- type: input
   attributes:
     label: Your Fan Firmware Version.
     description: Please enter your fan's firmware version.
   validations:
     required: true
-- type: textarea
+- type: input
   attributes:
     label: Your Fan MCU Version.
     description: Please enter your fan's MCU version.
