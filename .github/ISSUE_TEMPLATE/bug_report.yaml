@@ -75,11 +75,12 @@ body:
   attributes:
     label: Extra information about the steps taken.
     description: Steps to reproduce the behavior, including errors you've seen.
-    placeholder: |
-        **Information about the fan Webserver endpoints:**
+    value: |
         - Did you put your fan in "pairing mode" prior?
-        - Did you try other endpoints (/mcu.html, /devinfoget, etc.)?
-        - Which one worked and what was the response you got?
+
+        - Did you try other endpoints (/mcu.html, /devinfoget, etc.)? (List all endpoints found)
+
+        - Which other endpoints worked and what was the response you got? (Dump the full request/response)
   validations:
     required: true
 - type: textarea
