@@ -28,7 +28,8 @@ body:
     - This is another Dreo fan.
     - This is NOT a Dreo fan.
     - This is a DR-HTF004S.
-      required: true
+  validations:
+    required: true
 - type: input
   attributes:
     label: Your Fan Model (ONLY the DR-HTF004S is supported at the moment).
