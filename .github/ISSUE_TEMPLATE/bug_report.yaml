@@ -69,7 +69,7 @@ body:
     required: true
 - type: textarea
   attributes:
-    label: Steps To Reproduce, including errors you've seen.
+    label: Extra information about the steps taken.
     description: Steps to reproduce the behavior, including errors you've seen.
     placeholder: |
         **Information about the fan Webserver endpoints:**
