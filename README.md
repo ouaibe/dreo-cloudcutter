@@ -1193,7 +1193,7 @@ You have two choices depending on what you did prior:
 
 If you use the second route, you can even validate the pre-encryption OTA file that is going to be at `/esphome/.esphome/build/Dreo_DR-HTF004S/.pioenvs/Dreo_DR-HTF004S/image_bk7231n_app.0x011000.rbl` with a hex editor and look at its partition table (search for the magic ASCII `01PE`)
 
-In either case, your RBL file should start with the `RBL` letters when opened with a hex editor, and aside from the header, there should be no readable text in it since it's encrypted.
+In either case, the RBL file you want to upload later should start with the `RBL` letters when opened with a hex editor, and aside from the header, there should be no readable text in it since it's encrypted (you should especially **NOT** see `BK7231` around offset 0x110.)
 
 ## Upload your OTA Update
 
