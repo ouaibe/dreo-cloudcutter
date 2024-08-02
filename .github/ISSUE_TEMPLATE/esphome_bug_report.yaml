@@ -1,7 +1,7 @@
-name: 🐞 HA Integration Issue
-description: File a bug/issue AFTER you've successfully flashed a fan.
-title: "[BUG-HA] <title>"
-labels: ["Bug", "post-install", "Triage"]
+name: 🐞 ESPHome Flashing Issue
+description: File a bug/issue BEFORE you've flashed yourf an.
+title: "[BUG-Flashing] <title>"
+labels: ["Bug", "flashing", "Triage"]
 assignees: ouaibe
 
 body:
@@ -19,6 +19,17 @@ body:
     options:
     - label: I have read the FAQ.
       required: true
+- type: dropdown
+  id: fan_model
+  attributes:
+    label: Are you trying to run ESPHome on another Dreo Fan than the DR-HTF004S?
+    description: Please read the [FAQ](https://github.com/ouaibe/dreo-cloudcutter/tree/main?tab=readme-ov-file#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans) as other Dreo fans are not supported and very likely to break.
+    options:
+    - This is another Dreo fan.
+    - This is NOT a Dreo fan.
+    - This is a DR-HTF004S.
+  validations:
+    required: true
 - type: input
   attributes:
     label: Your Fan Model (ONLY the DR-HTF004S is supported at the moment).
@@ -27,8 +38,8 @@ body:
     required: true
 - type: input
   attributes:
-    label: ESPHome's version.
-    description: Please enter the ESPHomve version you're running.
+    label: Your Fan Firmware Version.
+    description: Please enter your fan's firmware version.
   validations:
     required: true
 - type: input
@@ -39,30 +50,32 @@ body:
     required: true
 - type: textarea
   attributes:
-    label: Current Behavior & Error logs.
-    description: A concise description of what you're experiencing.
+    label: Current Issue Flashing
+    description: A concise description of what you're experiencing while trying to flash your DR-HTF004S fan.
   validations:
     required: true
 - type: textarea
   attributes:
-    label: Expected Behavior.
+    label: Expected Behavior
     description: A concise description of what you expected to happen.
   validations:
     required: true
 - type: textarea
   attributes:
-    label: Steps To Reproduce, including errors you've seen.
+    label: Extra information about the steps taken so far ⚠️ Please Respond to these.
     description: Steps to reproduce the behavior, including errors you've seen.
-    placeholder: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
-        4. See error (Add your errors here)
+    value: |
+        - Did you put your fan in "pairing mode" prior?
+
+        - Did you try other endpoints (/mcu.html, /devinfoget, etc.)? (List all endpoints found)
+
+        - Which other endpoints worked and what was the response you got? (Dump the full request/response)
+    render: markdown
   validations:
     required: true
 - type: textarea
   attributes:
-    label: Information about your browser environment.
+    label: Information about your browser environment at time of flashing.
     description: |
       examples:
         - **Browser**: Firefox
