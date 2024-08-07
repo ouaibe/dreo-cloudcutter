@@ -259,12 +259,6 @@ uart:
             }
           }
 
-# Send a settings readout every 5 seconds.
-interval:
-  - interval: 5s
-    then:
-      - uart.write: [0xaa, 0x0a, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xf9]
-
 # Temperature sensor, changed by the UART lambda
 sensor:
   - platform: template
