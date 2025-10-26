@@ -163,15 +163,20 @@ uart:
                 }
               }
 
+              // AEBGIT: commented out what made problems and inserted direct assignments of the required int instead;
+              //         requires improvement!
+              //
               // Read Fan Speed, only change it if different than what we know.
-              std::string fan_speed_new = std::to_string(bytes[15]);
-              ESP_LOGD("main", "We read Fan Speed: '%s'", fan_speed_new.c_str());
-              if (id(fan_speed).state != fan_speed_new) {
-                ESP_LOGD("main", "Changing Fan Speed setting to '%s'", fan_speed_new.c_str());
-                id(fan_speed).publish_state(fan_speed_new.c_str());
-              } else {
-                ESP_LOGD("main", "Not changing Fan Speed settings.");
-              }
+              // std::string fan_speed_new = std::to_string(bytes[15]);
+              int fan_speed_new = bytes[15];
+              // ESP_LOGD("main", "We read Fan Speed: '%s'", fan_speed_new.c_str());
+              // if (id(fan_speed).state != fan_speed_new) {
+              //  ESP_LOGD("main", "Changing Fan Speed setting to '%s'", fan_speed_new.c_str());
+              //  id(fan_speed).publish_state(fan_speed_new.c_str());
+              id(fan_speed).publish_state(fan_speed_new);
+              //} else {
+              //  ESP_LOGD("main", "Not changing Fan Speed settings.");
+              //}
 
               // Read Oscillation, only change it if different than what we know.
               if (bytes[18] == 0x11) {
@@ -306,6 +311,21 @@ globals:
     restore_value: no
     initial_value: 'true'
 
+# Define slider component
+number:
+  - platform: template
+    name: "Fan Speed"
+    id: fan_speed
+    max_value: 12
+    min_value: 1
+    step: 1
+    mode: slider
+    restore_value: true
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
 # Define select components
 select:
   - platform: template
@@ -317,28 +337,6 @@ select:
       - "Normal"
       - "Sleep"
       - "OFF"
-    restore_value: true
-    optimistic: true
-    on_value:
-      then:
-        - switch.turn_on: send_fan_command
-
-  - platform: template
-    name: "Fan Speed"
-    id: fan_speed
-    options:
-      - "1"
-      - "2"
-      - "3"
-      - "4"
-      - "5"
-      - "6"
-      - "7"
-      - "8"
-      - "9"
-      - "10"
-      - "11"
-      - "12"
     restore_value: true
     optimistic: true
     on_value:
@@ -384,6 +382,30 @@ select:
       then:
         - switch.turn_on: send_fan_command
 
+# Template virtual fan
+fan:
+  - platform: template
+    name: "Virtual Dreo Fan"
+    id: virtual_dreo_fan
+    on_turn_on:
+      - lambda: |-
+          id(fan_mode).publish_state("Normal");
+    on_turn_off:
+      - lambda: |-
+          id(fan_mode).publish_state("OFF");
+    speed_count: 12
+    on_speed_set:
+      - lambda: |-
+          id(fan_speed).publish_state(id(virtual_dreo_fan).speed);
+    has_oscillating: true
+    on_oscillating_set:
+      - lambda: |-
+          if (id(virtual_dreo_fan).oscillating) {
+            id(fan_oscillation).publish_state("60 Degrees");
+          } else {
+            id(fan_oscillation).publish_state("OFF");
+          }
+
 # Template switch to handle sending bytestreams with all the settings at once.
 switch:
   - platform: template
@@ -421,7 +443,7 @@ switch:
             }
 
             // Modify the speed byte
-            int speed = atoi(id(fan_speed).state.c_str());
+            int speed = id(fan_speed).state;
             bytestream[15] = speed;
 
             // Modify the oscillation byte
