@@ -1219,7 +1219,7 @@ Onto sharing with others...
 
 Note that the YAML file makes use of C++ Lambdas to support UART communications with the MCU and tries to restore the settings for when the fan was turned off.
 
-Note that he timer function isn't supported since HA has a much, much more powerful schedule management than the built-in fan timer.
+The fan's built-in **Auto-Off timer** ("turn off after N minutes") is exposed as an `Auto-Off Timer` number entity (in minutes, `0` = no timer). It is intentionally **not** persisted across reboots and is cleared whenever the fan is turned off, since HA has much more powerful scheduling for anything time-of-day based — this entity only mirrors the fan's own countdown.
 
 ## Build the ESPHome image
 
@@ -1256,7 +1256,7 @@ If you're skilled and motivated, feel free to fork this repo and tackle this lis
 - [X] Finish the bi-directionnal integration and read the config from the UART traffic sent by the MCU (As well as the temperature).
 - [ ] Build a real ESPHome component in C++ instead of the Lambdas that I used in the `.yaml` file.
 - [ ] Add support for other fans.
-- [ ] Add support for the fan timer.
+- [X] Add support for the fan auto-off timer (`Auto-Off Timer` number entity).
 - [/] Re-implement the "long press on oscillate" to reset the wifi.
 
 # FAQ
