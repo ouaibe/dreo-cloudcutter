@@ -940,15 +940,52 @@ get ack1
 | 15 | Fan Mode:<br>`0x02` = OFF<br>`0x03` = Normal<br>`0x05` = Natural<br>`0x07` = Sleep<br>`0x1b` = Auto |
 | 16 | Fan Speed: From `0x01` to `0xC` (I have not tested more than `0xC` as it might break the fan)  |
 | 17 - 18 | Always `0x00`  |
-| 18| Oscillation Angle:<br>`0x00` = OFF <br> `0x11` = 30 Degrees<br>`0x21` = 60 Degrees<br>`0x31` = 90 Degrees<br>`0x41` = 120 Degrees<br>(The 1st nibble is the angle, the 2nd nibble is the "On/OFF" toggle, so `0x10`, `0x20`, `0x30`, `0x40` might work also, but not turn it on.) |
-| 19 | Always `0x02` |
-| 20 | Timer Hours On (in conjunction with byte #24):<br> `0xc0` = Cancel Timer<br> `0xa1` = 1st Nibble "hours ON", 2nd Nibble "How many Hours"<br>Ex: (this still has to be further investigated) `ab xx xx xx 70` = 11h57min, `af xx xx xx 80` = 15h58 min. |
-| 21 - 22 | Always `0x00`   |
-| 23 | Temperature in F: `0x4e` =  `78F` (Not sure why this is sent in commands, maybe calibration?)<br>It is also sent back from the MCU so we'll eventually need to read this.|
-| 24 | Timer Minutes On (in conjunction with byte #20):<br> `0x80` = 8 minutes<br> `0x10`= 1 minute|
-| 25 - 28 | Always `0x00`   |
-| 29 | Adaptative Display:<br>`0x40` = Adaptative Display On<br>`0x80` = Adaptative Display OFF  |
-| 30 | [Checksum](#checksum) |
+| 19 | Oscillation Angle:<br>`0x00` = OFF <br> `0x11` = 30 Degrees<br>`0x21` = 60 Degrees<br>`0x31` = 90 Degrees<br>`0x41` = 120 Degrees<br>(The 1st nibble is the angle, the 2nd nibble is the "On/OFF" toggle, so `0x10`, `0x20`, `0x30`, `0x40` might work also, but not turn it on.) |
+| 20 | Always `0x02` |
+| 21 | Auto-Off Timer, high part (used together with byte 25). See [Auto-Off Timer](#auto-off-timer) below.<br>bits `[4:0]` = whole **hours**, bits `[7:5]` = **tens of minutes**.<br>`0x00` = no timer. |
+| 22 - 23 | Always `0x00`   |
+| 24 | Temperature in F: `0x4e` =  `78F` (Not sure why this is sent in commands, maybe calibration?)<br>It is also sent back from the MCU so we'll eventually need to read this.|
+| 25 | Auto-Off Timer, low part (used together with byte 21).<br>bits `[7:4]` = **units of minutes**, low nibble always `0`.<br>`0x00` = no timer. |
+| 26 - 29 | Always `0x00`   |
+| 30 | Adaptative Display:<br>`0x40` = Adaptative Display On<br>`0x80` = Adaptative Display OFF  |
+| 31 | [Checksum](#checksum) |
+
+> **Note on byte numbering:** the indices above are 1-based and count `0xAA` as byte 1, so they match the raw bytes you see in the UART dumps. In the ESPHome lambda the same fields are accessed with a **0-based** array (`bytes[]`), i.e. ESPHome index = table index − 1 (oscillation = `bytes[18]`, temperature = `bytes[23]`, timer = `bytes[20]` / `bytes[24]`).
+
+### Auto-Off Timer
+
+This is the fan's **"turn off after N minutes"** countdown (the app sends it as the `timeroff` shadow datapoint, MCU datapoint id `0x07`). The total duration in minutes is split by the firmware into **hours / tens-of-minutes / units-of-minutes** and packed into two bytes of the *Change Fan Settings* frame:
+
+- **Byte 21** = `(tens_of_minutes << 5) | hours`  → bits `[4:0]` hours, bits `[7:5]` tens of minutes
+- **Byte 25** = `units_of_minutes << 4`  → units of minutes in the high nibble
+
+To **cancel** the timer, send both bytes as `0x00` (duration 0). When the fan is turned off the MCU clears any running timer on its own.
+
+#### Worked examples
+
+| Duration | hours | tens | units | Byte 21 | Byte 25 |
+| --- | --- | --- | --- | --- | --- |
+| 1 min  | 0  | 0 | 1 | `(0<<5)\|0` = `0x00` | `1<<4` = `0x10` |
+| 59 min | 0  | 5 | 9 | `(5<<5)\|0` = `0xA0` | `9<<4` = `0x90` |
+| 11h 57 min | 11 | 5 | 7 | `(5<<5)\|11` = `0xAB` | `7<<4` = `0x70` |
+| 15h 58 min | 15 | 5 | 8 | `(5<<5)\|15` = `0xAF` | `8<<4` = `0x80` |
+
+The first two rows come from captured `timeroff` commands (`du=1` and `du=59`); the last two are the values previously listed here as "to be further investigated" — they decode cleanly with this scheme (the raw bytes were correct, the earlier nibble-based explanation was not).
+
+Captured 59-minute command (note byte 21 = `a0`, byte 25 = `90`):
+
+```console
+send: len=31,buf=aa 1e fa 00 00 00 00 00 00 02 00 00 00 00 07 01 00 00 10 02 a0 00 00 4f 90 00 00 00 00 00 4d
+```
+
+Decode the value the MCU reports back with:
+
+```python
+hours = byte21 & 0x1F
+tens  = (byte21 >> 5) & 0x07
+units = (byte25 >> 4) & 0x0F
+minutes = hours * 60 + tens * 10 + units
+```
 
 There also exist other commands to get settings from the fan/MCU:
 
@@ -1182,7 +1219,7 @@ Onto sharing with others...
 
 Note that the YAML file makes use of C++ Lambdas to support UART communications with the MCU and tries to restore the settings for when the fan was turned off.
 
-Note that he timer function isn't supported since HA has a much, much more powerful schedule management than the built-in fan timer.
+The fan's built-in **Auto-Off timer** ("turn off after N minutes") is exposed as an `Auto-Off Timer` number entity (in minutes, `0` = no timer). It is intentionally **not** persisted across reboots and is cleared whenever the fan is turned off, since HA has much more powerful scheduling for anything time-of-day based — this entity only mirrors the fan's own countdown.
 
 ## Build the ESPHome image
 
@@ -1219,7 +1256,7 @@ If you're skilled and motivated, feel free to fork this repo and tackle this lis
 - [X] Finish the bi-directionnal integration and read the config from the UART traffic sent by the MCU (As well as the temperature).
 - [ ] Build a real ESPHome component in C++ instead of the Lambdas that I used in the `.yaml` file.
 - [ ] Add support for other fans.
-- [ ] Add support for the fan timer.
+- [X] Add support for the fan auto-off timer (`Auto-Off Timer` number entity).
 - [/] Re-implement the "long press on oscillate" to reset the wifi.
 
 # FAQ

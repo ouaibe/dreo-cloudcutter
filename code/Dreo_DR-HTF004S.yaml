@@ -216,6 +216,16 @@ uart:
                 }
               }
 
+              // Read Auto-Off Timer (frame byte 21 => bytes[20], byte 25 => bytes[24]).
+              //   bytes[20]: bits [4:0] = hours, bits [7:5] = tens of minutes
+              //   bytes[24]: bits [7:4] = units of minutes
+              int timer_total = (bytes[20] & 0x1F) * 60 + ((bytes[20] >> 5) & 0x07) * 10 + ((bytes[24] >> 4) & 0x0F);
+              ESP_LOGD("main", "We read Auto-Off Timer: %d min (b21=0x%02X b25=0x%02X)", timer_total, bytes[20], bytes[24]);
+              if ((int) id(fan_off_timer).state != timer_total) {
+                ESP_LOGD("main", "Changing Auto-Off Timer setting to %d min", timer_total);
+                id(fan_off_timer).publish_state((float) timer_total);
+              }
+
               id(disable_send_fan_command) = false; // Re-enable sending updates to the MCU.
 
             } else if (bytes.size() == 31 && bytes[0] == 0xAA && bytes[1] == 0x1E && bytes[2] == 0xFA && bytes[9] == 0x63) {
@@ -384,6 +394,26 @@ select:
       then:
         - switch.turn_on: send_fan_command
 
+# Auto-Off timer ("turn off after N minutes"). 0 = no timer.
+# It is intentionally NOT persisted across reboots/resets (restore_value: false)
+# and is forgotten whenever the fan is turned OFF (the MCU clears it on its side too).
+number:
+  - platform: template
+    name: "Auto-Off Timer"
+    id: fan_off_timer
+    unit_of_measurement: "min"
+    icon: "mdi:fan-off"
+    min_value: 0
+    max_value: 720   # 12h; the protocol can encode more, raise if your model allows it
+    step: 1
+    mode: box
+    restore_value: false   # forget the timer across reboots/resets
+    initial_value: 0        # always boot with no timer (avoids NaN -> garbage timer bytes)
+    optimistic: true
+    on_value:
+      then:
+        - switch.turn_on: send_fan_command
+
 # Template switch to handle sending bytestreams with all the settings at once.
 switch:
   - platform: template
@@ -450,6 +480,25 @@ switch:
               bytestream[29] = 0x40;
             } else if (id(fan_adaptive_display).state == "Adaptive Display Off") {
               bytestream[29] = 0x80;
+            }
+
+            // Modify the Auto-Off timer bytes (frame byte 21 / byte 25 => bytestream[20] / bytestream[24]).
+            //   byte 21 = (tens_of_minutes << 5) | hours   (bits [4:0] hours, bits [7:5] tens of minutes)
+            //   byte 25 =  units_of_minutes << 4           (units of minutes in the high nibble)
+            // If the fan is being turned OFF we clear the timer ("it's OK to forget the timeroff").
+            int timer_min = (id(fan_mode).state == "OFF") ? 0 : (int) id(fan_off_timer).state;
+            if (timer_min < 0) timer_min = 0;
+            int timer_h = timer_min / 60;
+            int timer_t = (timer_min % 60) / 10;
+            int timer_u = (timer_min % 60) % 10;
+            bytestream[20] = (uint8_t) (((timer_t & 0x07) << 5) | (timer_h & 0x1F));
+            bytestream[24] = (uint8_t) ((timer_u & 0x0F) << 4);
+
+            // Reflect the auto-clear in HA without re-triggering another send (guarded by the flag).
+            if (id(fan_mode).state == "OFF" && (int) id(fan_off_timer).state != 0) {
+              id(disable_send_fan_command) = true;
+              id(fan_off_timer).publish_state(0);
+              id(disable_send_fan_command) = false;
             }
 
             ESP_LOGD("custom", "Modified bytestream before checksum: ");
