@@ -1229,6 +1229,8 @@ A two-way **`Fan`** entity is also exposed, so the fan works with the standard H
 - it is purely additive: the original selects and switches are still there, and the Fan entity stays in sync with them and with the physical buttons on the fan;
 - turning oscillation back on from the Fan entity restores the last angle used (or 60° the first time).
 
+For ready-made dashboard cards (a zero-dependency native version and a modern single-frame version), see [HOME_ASSISTANT_CARD.md](./HOME_ASSISTANT_CARD.md).
+
 > **Upgrading from an older version of the YAML:** ESPHome no longer accepts `/` in entity names, so four switches were renamed: `Fan Power (ON-OFF)`, `UART - Turn fan ON-OFF`, `UART - Beep ON-OFF` and `UART - Adaptative Display ON-OFF`. Home Assistant creates them as new entities; if automations or dashboards used the old ones, rename the new entities back to the old entity IDs in HA.
 
 ## Build the ESPHome image
