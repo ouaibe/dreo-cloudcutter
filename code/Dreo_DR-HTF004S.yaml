@@ -1,5 +1,7 @@
 esphome:
-  name: Dreo_DR-HTF004S
+  name: dreo-dr-htf004s # lowercase, digits, - and _ only (ESPHome rejects uppercase)
+  friendly_name: Dreo DR-HTF004S
+  min_version: 2026.10.0 # selects are read with current_option(); older ESPHome can't build this file
   platformio_options:
     #board_build.bkcrypt_coeffs: "123456782FAA55AA3AEE63DD4FEEAA00" does not really matter
     board_build.bkcrypt_coeffs: "00000000000000000000000000000000"
@@ -85,7 +87,7 @@ uart:
               // Read Beeper, only change it if different than what we know.
               if (bytes[12] == 0x04) {
               ESP_LOGD("main", "We read 'Sound On'");
-                if(id(fan_beeper).state != "Sound On"){
+                if(id(fan_beeper).current_option() != "Sound On"){
                   ESP_LOGD("main", "Changing Fan Beeper setting to 'Sound On'");
                   id(fan_beeper).publish_state("Sound On");
                 } else {
@@ -93,7 +95,7 @@ uart:
                 }
               } else if (bytes[12] == 0x08) {
               ESP_LOGD("main", "We read 'Sound Off'");
-                if(id(fan_beeper).state != "Sound Off"){
+                if(id(fan_beeper).current_option() != "Sound Off"){
                   ESP_LOGD("main", "Changing Fan Beeper setting to 'Sound Off'");
                   id(fan_beeper).publish_state("Sound Off");
                 } else {
@@ -104,7 +106,7 @@ uart:
               // Read Adaptive Display, only change it if different than what we know.
               if (bytes[29] == 0x40) {
                 ESP_LOGD("main", "We read 'Adaptive Display On'");
-                if (id(fan_adaptive_display).state != "Adaptive Display On") {
+                if (id(fan_adaptive_display).current_option() != "Adaptive Display On") {
                   ESP_LOGD("main", "Changing Adaptive Display setting to 'Adaptive Display On'");
                   id(fan_adaptive_display).publish_state("Adaptive Display On");
                 } else {
@@ -112,7 +114,7 @@ uart:
                 }
               } else if (bytes[29] == 0x80) {
                 ESP_LOGD("main", "We read 'Adaptive Display Off'");
-                if (id(fan_adaptive_display).state != "Adaptive Display Off") {
+                if (id(fan_adaptive_display).current_option() != "Adaptive Display Off") {
                   ESP_LOGD("main", "Changing Adaptive Display setting to 'Adaptive Display Off'");
                   id(fan_adaptive_display).publish_state("Adaptive Display Off");
                 } else {
@@ -123,7 +125,7 @@ uart:
               // Read Fan Mode, only change it if different than what we know.
               if (bytes[14] == 0x1B) {
                 ESP_LOGD("main", "We read Fan Mode:'Auto'");
-                if (id(fan_mode).state != "Auto") {
+                if (id(fan_mode).current_option() != "Auto") {
                   ESP_LOGD("main", "Changing Fan Mode setting to 'Auto'");
                   id(fan_mode).publish_state("Auto");
                 } else {
@@ -131,7 +133,7 @@ uart:
                 }
               } else if (bytes[14] == 0x05) {
                 ESP_LOGD("main", "We read Fan Mode:'Natural'");
-                if (id(fan_mode).state != "Natural") {
+                if (id(fan_mode).current_option() != "Natural") {
                   ESP_LOGD("main", "Changing Fan Mode setting to 'Natural'");
                   id(fan_mode).publish_state("Natural");
                 } else {
@@ -139,7 +141,7 @@ uart:
                 }
               } else if (bytes[14] == 0x03) {
                 ESP_LOGD("main", "We read Fan Mode:'Normal'");
-                if (id(fan_mode).state != "Normal") {
+                if (id(fan_mode).current_option() != "Normal") {
                   ESP_LOGD("main", "Changing Fan Mode setting to 'Normal'");
                   id(fan_mode).publish_state("Normal");
                 } else {
@@ -147,7 +149,7 @@ uart:
                 }
               } else if (bytes[14] == 0x07) {
                 ESP_LOGD("main", "We read Fan Mode:'Sleep'");
-                if (id(fan_mode).state != "Sleep") {
+                if (id(fan_mode).current_option() != "Sleep") {
                   ESP_LOGD("main", "Changing Fan Mode setting to 'Sleep'");
                   id(fan_mode).publish_state("Sleep");
                 } else {
@@ -155,7 +157,7 @@ uart:
                 }
               } else if (bytes[14] == 0x02) {
                 ESP_LOGD("main", "We read Fan Mode:'OFF'");
-                if (id(fan_mode).state != "OFF") {
+                if (id(fan_mode).current_option() != "OFF") {
                   ESP_LOGD("main", "Changing Fan Mode setting to 'OFF'");
                   id(fan_mode).publish_state("OFF");
                 } else {
@@ -166,7 +168,7 @@ uart:
               // Read Fan Speed, only change it if different than what we know.
               std::string fan_speed_new = std::to_string(bytes[15]);
               ESP_LOGD("main", "We read Fan Speed: '%s'", fan_speed_new.c_str());
-              if (id(fan_speed).state != fan_speed_new) {
+              if (id(fan_speed).current_option() != fan_speed_new) {
                 ESP_LOGD("main", "Changing Fan Speed setting to '%s'", fan_speed_new.c_str());
                 id(fan_speed).publish_state(fan_speed_new.c_str());
               } else {
@@ -176,7 +178,7 @@ uart:
               // Read Oscillation, only change it if different than what we know.
               if (bytes[18] == 0x11) {
                 ESP_LOGD("main", "We read Oscillation:'30 Degrees'");
-                if (id(fan_oscillation).state != "30 Degrees") {
+                if (id(fan_oscillation).current_option() != "30 Degrees") {
                   ESP_LOGD("main", "Changing Oscillation setting to '30 Degrees'");
                   id(fan_oscillation).publish_state("30 Degrees");
                 } else {
@@ -184,7 +186,7 @@ uart:
                 }
               } else if (bytes[18] == 0x21) {
                 ESP_LOGD("main", "We read Oscillation:'60 Degrees'");
-                if (id(fan_oscillation).state != "60 Degrees") {
+                if (id(fan_oscillation).current_option() != "60 Degrees") {
                   ESP_LOGD("main", "Changing Oscillation setting to '60 Degrees'");
                   id(fan_oscillation).publish_state("60 Degrees");
                 } else {
@@ -192,7 +194,7 @@ uart:
                 }
               } else if (bytes[18] == 0x31) {
                 ESP_LOGD("main", "We read Oscillation:'90 Degrees'");
-                if (id(fan_oscillation).state != "90 Degrees") {
+                if (id(fan_oscillation).current_option() != "90 Degrees") {
                   ESP_LOGD("main", "Changing Oscillation setting to '90 Degrees'");
                   id(fan_oscillation).publish_state("90 Degrees");
                 } else {
@@ -200,7 +202,7 @@ uart:
                 }
               } else if (bytes[18] == 0x41) {
                 ESP_LOGD("main", "We read Oscillation:'120 Degrees'");
-                if (id(fan_oscillation).state != "120 Degrees") {
+                if (id(fan_oscillation).current_option() != "120 Degrees") {
                   ESP_LOGD("main", "Changing Oscillation setting to '120 Degrees'");
                   id(fan_oscillation).publish_state("120 Degrees");
                 } else {
@@ -208,7 +210,7 @@ uart:
                 }
               } else if (bytes[18] == 0x00 || bytes[18] == 0x20 || bytes[18] == 0x30 || bytes[18] == 0x40) {
                 ESP_LOGD("main", "We read Oscillation:'OFF' - 0x%02X", bytes[18]);
-                if (id(fan_oscillation).state != "OFF") {
+                if (id(fan_oscillation).current_option() != "OFF") {
                   ESP_LOGD("main", "Changing Oscillation setting to 'OFF'");
                   id(fan_oscillation).publish_state("OFF");
                 } else {
@@ -227,6 +229,9 @@ uart:
               }
 
               id(disable_send_fan_command) = false; // Re-enable sending updates to the MCU.
+
+              // Keep the HA/HomeKit Fan entity aligned with the real device state (no-op if nothing changed).
+              id(sync_fan_entity).execute();
 
             } else if (bytes.size() == 31 && bytes[0] == 0xAA && bytes[1] == 0x1E && bytes[2] == 0xFA && bytes[9] == 0x63) {
 
@@ -316,6 +321,11 @@ globals:
     restore_value: no
     initial_value: 'true'
 
+  - id: fan_sync_in_progress # set while the Fan entity is updated FROM the device, so its triggers don't write back
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
 # Define select components
 select:
   - platform: template
@@ -332,6 +342,7 @@ select:
     on_value:
       then:
         - switch.turn_on: send_fan_command
+        - script.execute: sync_fan_entity
 
   - platform: template
     name: "Fan Speed"
@@ -354,6 +365,7 @@ select:
     on_value:
       then:
         - switch.turn_on: send_fan_command
+        - script.execute: sync_fan_entity
 
   - platform: template
     name: "Oscillation Angle"
@@ -369,6 +381,11 @@ select:
     on_value:
       then:
         - switch.turn_on: send_fan_command
+        - lambda: |-
+            // Remember the last real angle so turning oscillation back on (Fan entity) restores it.
+            auto angle = id(fan_oscillation).current_option();
+            if (!angle.empty() && angle != "OFF") id(fan_oscillation_global) = angle.str();
+        - script.execute: sync_fan_entity
 
   - platform: template
     name: "Beeper"
@@ -414,6 +431,92 @@ number:
       then:
         - switch.turn_on: send_fan_command
 
+# Fan entity for Home Assistant / HomeKit (idea from issue #9, made two-way).
+# Purely additive: the selects and the Fan Power switch keep working exactly as before.
+# Mapping: Normal = manual speed (no preset); Auto / Natural / Sleep = presets. Setting a speed clears
+# the preset (Home Assistant convention, enforced by ESPHome) - that just means "manual speed".
+# ESPHome fan triggers fire on EVERY state change, whoever made it; the fan_sync_in_progress guard stops
+# updates coming FROM the device (sync_fan_entity) from being written back to it.
+fan:
+  - platform: template
+    name: "Fan"
+    id: dreo_fan
+    speed_count: 12
+    has_oscillating: true
+    preset_modes:
+      - "Auto"
+      - "Natural"
+      - "Sleep"
+    restore_mode: NO_RESTORE # the real state comes from the MCU readback within 5 s of boot
+    on_turn_on:
+      - lambda: |-
+          if (id(fan_sync_in_progress)) return;
+          // Use the preset HA asked for, else the last mode we ran in, else Normal.
+          auto preset = id(dreo_fan).get_preset_mode();
+          std::string mode = !preset.empty() ? preset.str() : id(fan_mode_memory_global);
+          if (mode.empty() || mode == "OFF") mode = "Normal";
+          if (id(fan_mode).current_option() != mode) id(fan_mode).publish_state(mode);
+    on_turn_off:
+      - lambda: |-
+          if (id(fan_sync_in_progress)) return;
+          if (id(fan_mode).current_option() != "OFF") id(fan_mode).publish_state("OFF");
+    on_speed_set:
+      - lambda: |-
+          if (id(fan_sync_in_progress)) return;
+          if (x >= 1 && x <= 12) {
+            auto current = id(fan_speed).active_index();
+            if (!current.has_value() || (int) *current != x - 1) id(fan_speed).publish_state((size_t) (x - 1));
+          }
+    on_oscillating_set:
+      - lambda: |-
+          if (id(fan_sync_in_progress)) return;
+          if (x) {
+            std::string angle = id(fan_oscillation_global);
+            if (angle.empty() || angle == "OFF") angle = "60 Degrees";
+            if (id(fan_oscillation).current_option() != angle) id(fan_oscillation).publish_state(angle);
+          } else if (id(fan_oscillation).current_option() != "OFF") {
+            id(fan_oscillation).publish_state("OFF");
+          }
+    on_preset_set:
+      - lambda: |-
+          if (id(fan_sync_in_progress)) return;
+          // An empty preset means HA set a manual speed - keep the current mode.
+          if (!x.empty() && id(fan_mode).current_option() != x) id(fan_mode).publish_state(x.str());
+
+script:
+  - id: sync_fan_entity
+    mode: queued
+    then:
+      - lambda: |-
+          auto mode = id(fan_mode).current_option();
+          bool on = !mode.empty() && mode != "OFF";
+          bool is_preset = on && (mode == "Auto" || mode == "Natural" || mode == "Sleep");
+          auto osc_option = id(fan_oscillation).current_option();
+          bool osc = !osc_option.empty() && osc_option != "OFF";
+          auto speed_index = id(fan_speed).active_index();
+          int speed = speed_index.has_value() ? (int) *speed_index + 1 : id(dreo_fan).speed;
+          auto current_preset = id(dreo_fan).get_preset_mode();
+
+          bool changed = id(dreo_fan).state != on || id(dreo_fan).oscillating != osc;
+          if (is_preset) {
+            changed = changed || current_preset != mode;
+          } else {
+            changed = changed || id(dreo_fan).speed != speed || !current_preset.empty();
+          }
+          if (!changed) return;
+
+          id(fan_sync_in_progress) = true;
+          auto call = id(dreo_fan).make_call();
+          call.set_state(on);
+          call.set_oscillating(osc);
+          if (is_preset) {
+            call.set_preset_mode(mode.c_str()); // no speed in the same call: a speed would clear the preset
+          } else {
+            call.set_speed(speed);              // Normal / OFF: manual speed, clears any preset
+          }
+          call.perform();
+          id(fan_sync_in_progress) = false;
+
 # Template switch to handle sending bytestreams with all the settings at once.
 switch:
   - platform: template
@@ -434,51 +537,53 @@ switch:
 
             // Modify the mode byte
             // Remember the mode, only for the "ON" modes.
-            if (id(fan_mode).state == "Auto") {
-              id(fan_mode_memory_global) = id(fan_mode).state;
+            if (id(fan_mode).current_option() == "Auto") {
+              id(fan_mode_memory_global) = id(fan_mode).current_option().str();
               bytestream[14] = 0x1b;
-            } else if (id(fan_mode).state == "Natural") {
-              id(fan_mode_memory_global) = id(fan_mode).state;
+            } else if (id(fan_mode).current_option() == "Natural") {
+              id(fan_mode_memory_global) = id(fan_mode).current_option().str();
               bytestream[14] = 0x05;
-            } else if (id(fan_mode).state == "Normal") {
-              id(fan_mode_memory_global) = id(fan_mode).state;
+            } else if (id(fan_mode).current_option() == "Normal") {
+              id(fan_mode_memory_global) = id(fan_mode).current_option().str();
               bytestream[14] = 0x03;
-            } else if (id(fan_mode).state == "Sleep") {
-              id(fan_mode_memory_global) = id(fan_mode).state;
+            } else if (id(fan_mode).current_option() == "Sleep") {
+              id(fan_mode_memory_global) = id(fan_mode).current_option().str();
               bytestream[14] = 0x07;
             } else { // OFF
               bytestream[14] = 0x02;
             }
 
             // Modify the speed byte
-            int speed = atoi(id(fan_speed).state.c_str());
+            // ESPHome 2026.10: selects no longer expose .state; options are "1".."12" in order, so index + 1 = speed.
+            auto speed_index = id(fan_speed).active_index();
+            int speed = speed_index.has_value() ? (int) *speed_index + 1 : 1;
             bytestream[15] = speed;
 
             // Modify the oscillation byte
             // 1st nibble = Angle, 2nd nibble = activate (0 not needed)
-            if (id(fan_oscillation).state == "30 Degrees") {
+            if (id(fan_oscillation).current_option() == "30 Degrees") {
               bytestream[18] = 0x11;
-            } else if (id(fan_oscillation).state == "60 Degrees") {
+            } else if (id(fan_oscillation).current_option() == "60 Degrees") {
               bytestream[18] = 0x21;
-            } else if (id(fan_oscillation).state == "90 Degrees") {
+            } else if (id(fan_oscillation).current_option() == "90 Degrees") {
               bytestream[18] = 0x31;
-            } else if (id(fan_oscillation).state == "120 Degrees") {
+            } else if (id(fan_oscillation).current_option() == "120 Degrees") {
               bytestream[18] = 0x41;
             } else { // OFF
               bytestream[18] = 0x00;
             }
 
             // Modify the beeper byte
-            if (id(fan_beeper).state == "Sound On") {
+            if (id(fan_beeper).current_option() == "Sound On") {
               bytestream[12] = 0x04;
-            } else if (id(fan_beeper).state == "Sound Off") {
+            } else if (id(fan_beeper).current_option() == "Sound Off") {
               bytestream[12] = 0x08;
             }
 
             // Modify the adaptive display byte
-            if (id(fan_adaptive_display).state == "Adaptive Display On") {
+            if (id(fan_adaptive_display).current_option() == "Adaptive Display On") {
               bytestream[29] = 0x40;
-            } else if (id(fan_adaptive_display).state == "Adaptive Display Off") {
+            } else if (id(fan_adaptive_display).current_option() == "Adaptive Display Off") {
               bytestream[29] = 0x80;
             }
 
@@ -486,7 +591,7 @@ switch:
             //   byte 21 = (tens_of_minutes << 5) | hours   (bits [4:0] hours, bits [7:5] tens of minutes)
             //   byte 25 =  units_of_minutes << 4           (units of minutes in the high nibble)
             // If the fan is being turned OFF we clear the timer ("it's OK to forget the timeroff").
-            int timer_min = (id(fan_mode).state == "OFF") ? 0 : (int) id(fan_off_timer).state;
+            int timer_min = (id(fan_mode).current_option() == "OFF") ? 0 : (int) id(fan_off_timer).state;
             if (timer_min < 0) timer_min = 0;
             int timer_h = timer_min / 60;
             int timer_t = (timer_min % 60) / 10;
@@ -495,7 +600,7 @@ switch:
             bytestream[24] = (uint8_t) ((timer_u & 0x0F) << 4);
 
             // Reflect the auto-clear in HA without re-triggering another send (guarded by the flag).
-            if (id(fan_mode).state == "OFF" && (int) id(fan_off_timer).state != 0) {
+            if (id(fan_mode).current_option() == "OFF" && (int) id(fan_off_timer).state != 0) {
               id(disable_send_fan_command) = true;
               id(fan_off_timer).publish_state(0);
               id(disable_send_fan_command) = false;
@@ -543,11 +648,11 @@ switch:
 
 # Define switches for turning the fan on and off, re-using the "fan mode" options
   - platform: template
-    name: "Fan Power (ON/OFF)"
+    name: "Fan Power (ON-OFF)"
     id: fan_power
     lambda: |-
           // Turn the switch ON/OFF by default based on the fan state.
-          if (!(id(fan_mode).state == "OFF")) { return true; } else { return false; }
+          return id(fan_mode).current_option() != "OFF";
     turn_on_action:
       - lambda: |-
           // Turn on and restore fan mode from memory before it was turned OFF
@@ -571,19 +676,19 @@ switch:
 # Static UART commands taken from previous traffic dump - used for tests
   - platform: uart
     entity_category: 'diagnostic'
-    name: "UART - Turn fan ON/OFF"
+    name: "UART - Turn fan ON-OFF"
     data:
         turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x02, 0x00, 0x00, 0x20, 0x02, 0x00, 0x00, 0x00, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6c]
         turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x84]
   - platform: uart
     entity_category: 'diagnostic'
-    name: "UART - Beep ON/OFF"
+    name: "UART - Beep ON-OFF"
     data:
       turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x04, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7E]
       turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x08, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7A]
   - platform: uart
     entity_category: 'diagnostic'
-    name: "UART - Adaptative Display ON/OFF"
+    name: "UART - Adaptative Display ON-OFF"
     data:
       turn_on: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x41]
       turn_off: [0xaa, 0x1e, 0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x4f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x01]
