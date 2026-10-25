@@ -1221,6 +1221,16 @@ Note that the YAML file makes use of C++ Lambdas to support UART communications 
 
 The fan's built-in **Auto-Off timer** ("turn off after N minutes") is exposed as an `Auto-Off Timer` number entity (in minutes, `0` = no timer). It is intentionally **not** persisted across reboots and is cleared whenever the fan is turned off, since HA has much more powerful scheduling for anything time-of-day based — this entity only mirrors the fan's own countdown.
 
+The YAML requires **ESPHome 2026.10 or newer** (selects are now read with `current_option()` / `active_index()`). If you're stuck on an older ESPHome, use an older version of the file from the git history.
+
+A two-way **`Fan`** entity is also exposed, so the fan works with the standard HA fan/tile cards and with HomeKit / Google / Alexa through HA (idea from [issue #9](https://github.com/ouaibe/dreo-cloudcutter/issues/9)):
+
+- speed `1`-`12` as a percentage slider, `Auto` / `Natural` / `Sleep` as presets (`Normal` = a manual speed with no preset), oscillation on/off;
+- it is purely additive: the original selects and switches are still there, and the Fan entity stays in sync with them and with the physical buttons on the fan;
+- turning oscillation back on from the Fan entity restores the last angle used (or 60° the first time).
+
+> **Upgrading from an older version of the YAML:** ESPHome no longer accepts `/` in entity names, so four switches were renamed: `Fan Power (ON-OFF)`, `UART - Turn fan ON-OFF`, `UART - Beep ON-OFF` and `UART - Adaptative Display ON-OFF`. Home Assistant creates them as new entities; if automations or dashboards used the old ones, rename the new entities back to the old entity IDs in HA.
+
 ## Build the ESPHome image
 
 You have two choices depending on what you did prior:
