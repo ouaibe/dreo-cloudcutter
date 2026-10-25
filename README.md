@@ -1,6 +1,12 @@
 # Dreo Cloudcutter
 A hacking adventure... 🧝💻🔓
 
+> [!TIP]
+> ### Just want to set it up?
+> 1. **Read the [Disclaimer](#disclaimer)** — you can brick the fan.
+> 2. **Flash ESPHome:** follow [The Howto](#the-howto).
+> 3. **Add it to Home Assistant:** ready-to-paste dashboard cards (zero-dependency or modern) in [HOME_ASSISTANT_CARD.md](./HOME_ASSISTANT_CARD.md).
+
 # Disclaimer
 
 This information is provided for educational purposes only, I'm not responsible if you break, or brick your equipment following some instructions provided herein (see [License](LICENSE)). It is very likely that you will do so, and at the very least you should be prepared to connect via UART to your device. ⚠️🚨 DO NOT use any of this information to try and OTA on [another Dreo fan](#does-this-work-with-other-dreo-pilot-max-dbtf04s-dttf04s-or-other-dreo-fans).
@@ -22,8 +28,6 @@ Let's be honest, it doesn't look as good as the Dysons, but it's much, much chea
 <img alt="Dreo Fan Picture" src="./images/dreo_fan.jpg" width="100" style="display: block;margin-left: auto;margin-right: auto;width: 20%;">
 
 Little did I know, this was the start of a great adventure... 🧝🗡️🏹
-
-> **Just want to set it up?** Jump to [The Howto](#the-howto). Once the fan runs ESPHome, ready-to-paste Home Assistant dashboard cards are in [HOME_ASSISTANT_CARD.md](./HOME_ASSISTANT_CARD.md).
 
 # Table of contents
 
