@@ -23,6 +23,8 @@ Let's be honest, it doesn't look as good as the Dysons, but it's much, much chea
 
 Little did I know, this was the start of a great adventure... 🧝🗡️🏹
 
+> **Just want to set it up?** Jump to [The Howto](#the-howto). Once the fan runs ESPHome, ready-to-paste Home Assistant dashboard cards are in [HOME_ASSISTANT_CARD.md](./HOME_ASSISTANT_CARD.md).
+
 # Table of contents
 
 <!-- TOC -->
@@ -57,6 +59,7 @@ Little did I know, this was the start of a great adventure... 🧝🗡️🏹
     - [Get the Dreo YAML file](#get-the-dreo-yaml-file)
     - [Build the ESPHome image](#build-the-esphome-image)
     - [Upload your OTA Update](#upload-your-ota-update)
+    - [Add the fan to a Home Assistant dashboard](./HOME_ASSISTANT_CARD.md)
 - [Where do we go from here / What's left to tackle](#where-do-we-go-from-here--whats-left-to-tackle)
 - [FAQ](#faq)
     - [When is XXXXX going to be supported?](#when-is-xxxxx-going-to-be-supported)
